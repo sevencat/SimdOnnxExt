@@ -1,0 +1,16 @@
+name: docs
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  progress:
+    name: progress snapshot is up to date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check docs/PROGRESS.md against docs/PLAN.md
+        shell: pwsh
+        run: ./tools/progress.ps1 -Check

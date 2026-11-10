@@ -1,0 +1,116 @@
+{
+  "$comment": "fixture 清单。权重不入库：由 models/fetch-models.ps1 拉取，或按 source 从本机复制。sha256 首次落盘后补全。",
+  "version": 1,
+  "fixtures": [
+    {
+      "id": "yolo11n-opset12",
+      "family": "yolo",
+      "task": "detect",
+      "file": "yolo/yolo11n-opset12.onnx",
+      "source": "F:\\code\\SimdYolo\\models\\onnx\\yolo11n-opset12.onnx",
+      "why": "128x128 小导出（336 anchors）；DFL Softmax 在最后一维，当前引擎可直接编译，M1 的基线 fixture",
+      "license": "AGPL-3.0 (Ultralytics weights)",
+      "sha256": ""
+    },
+    {
+      "id": "yolo11n",
+      "family": "yolo",
+      "task": "detect",
+      "file": "yolo/yolo11n.onnx",
+      "source": "F:\\code\\SimdYolo\\models\\onnx\\yolo11n.onnx",
+      "why": "新导出：DFL Softmax axis=1（rank-4 非末维），用于验收 E-01 / M2-04",
+      "license": "AGPL-3.0 (Ultralytics weights)",
+      "sha256": ""
+    },
+    {
+      "id": "yolov8n-opset12",
+      "family": "yolo",
+      "task": "detect",
+      "file": "yolo/yolov8n-opset12.onnx",
+      "source": "F:\\code\\SimdYolo\\models\\onnx\\yolov8n-opset12.onnx",
+      "why": "128x128 小导出；与 yolo11n-opset12 同尺寸的第二组对照（不同头结构）",
+      "license": "AGPL-3.0 (Ultralytics weights)",
+      "sha256": ""
+    },
+    {
+      "id": "yolo11n-seg",
+      "family": "yolo",
+      "task": "segment",
+      "file": "yolo/yolo11n-seg.onnx",
+      "source": "F:\\code\\SimdYolo\\models\\onnx\\yolo11n-seg.onnx",
+      "why": "双输出（output0 + output1）：验收 M2-01 / E-02",
+      "license": "AGPL-3.0 (Ultralytics weights)",
+      "sha256": ""
+    },
+    {
+      "id": "yolo11n-pose",
+      "family": "yolo",
+      "task": "pose",
+      "file": "yolo/yolo11n-pose.onnx",
+      "source": "F:\\code\\SimdYolo\\models\\onnx\\yolo11n-pose.onnx",
+      "why": "单输出关键点：验收 M2-02（先依赖 E-01）",
+      "license": "AGPL-3.0 (Ultralytics weights)",
+      "sha256": ""
+    },
+    {
+      "id": "yolov10n",
+      "family": "yolo",
+      "task": "detect",
+      "file": "yolo/yolov10n.onnx",
+      "source": "F:\\code\\SimdYolo\\models\\onnx\\yolov10n.onnx",
+      "why": "端到端头（TopK / GatherElements / Tile / Expand）：验收 M2-03",
+      "license": "AGPL-3.0 (Ultralytics weights)",
+      "sha256": ""
+    },
+    {
+      "id": "yolo26n",
+      "family": "yolo",
+      "task": "detect",
+      "file": "yolo/yolo26n.onnx",
+      "source": "F:\\code\\SimdYolo\\models\\onnx\\yolo26n.onnx",
+      "why": "端到端头 + Flatten/ReduceMax/Mod：验收 M2-03",
+      "license": "AGPL-3.0 (Ultralytics weights)",
+      "sha256": ""
+    },
+    {
+      "id": "rfdetr-small",
+      "family": "rfdetr",
+      "task": "detect",
+      "file": "rfdetr/rfdetr-small.onnx",
+      "source": "F:\\code\\TinyLabel\\train\\testrftedr\\runs\\rfdetr-small.onnx",
+      "why": "1537 节点、输入 1x3x512x512、输出 dets[1,300,4] + labels[1,300,N]；验收 M4-01 / E-03",
+      "license": "RoBoflow RF-DETR（权重许可见发布页）",
+      "sha256": ""
+    },
+    {
+      "id": "rfdetr-small-coco",
+      "family": "rfdetr",
+      "task": "detect",
+      "file": "rfdetr/rfdetr-small-coco.onnx",
+      "source": "F:\\code\\TinyLabel\\train\\testrftedr\\runs\\rfdetr-small-coco.onnx",
+      "why": "COCO 91 类版本：验收类别映射与 mAP（M4-03）",
+      "license": "RoBoflow RF-DETR（权重许可见发布页）",
+      "sha256": ""
+    },
+    {
+      "id": "ppocrv6-tiny",
+      "family": "ocr",
+      "task": "ocr",
+      "file": "ocr/",
+      "source": "NuGet: Sdcb.SimdPaddleOCR.Models.ChineseV6Tiny（程序集嵌入资源）",
+      "why": "det / rec / cls + 字典：验收 M3-01..M3-05",
+      "license": "Apache-2.0 (PaddlePaddle / PaddleOCR)",
+      "sha256": ""
+    },
+    {
+      "id": "sam3-v0.6.0",
+      "family": "sam3",
+      "task": "prompt-segment",
+      "file": "sam3/",
+      "source": "HF: wkentaro/sam3-onnx-models-v0.6.0（image encoder / language encoder / decoder）",
+      "why": "三模型链路与文本/框/点提示：验收 M5-01..M5-06",
+      "license": "UNKNOWN — Meta SAM 系列许可，使用前确认",
+      "sha256": ""
+    }
+  ]
+}

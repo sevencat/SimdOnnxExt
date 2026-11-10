@@ -1,0 +1,55 @@
+<Project>
+  <!-- 引擎未发布到 nuget.org：默认直接引用相邻仓库 ..\SimdOnnx 的源码。
+       CI / 只装包的环境传 -p:UseLocalSimdOnnx=false，改为引用 Directory.Packages.props 里的精确版本。 -->
+  <PropertyGroup>
+    <UseLocalSimdOnnx Condition="'$(UseLocalSimdOnnx)' == ''">true</UseLocalSimdOnnx>
+    <SimdOnnxProjectPath Condition="'$(SimdOnnxProjectPath)' == ''">$(MSBuildThisFileDirectory)..\SimdOnnx\src\Sdcb.SimdOnnx\Sdcb.SimdOnnx.csproj</SimdOnnxProjectPath>
+    <!-- 图像处理门面 sevencat/ImageFacade：优先同级源码（本地 0.2.0 / 软后端 0.1.1）。
+         没有同级仓库时传 -p:UseLocalImageFacade=false，走 nuget 0.1.0（已含 Letterbox/Tensorizer/Nms/DetectionDrawing）。 -->
+    <UseLocalImageFacade Condition="'$(UseLocalImageFacade)' == ''">true</UseLocalImageFacade>
+    <ImageFacadeRoot Condition="'$(ImageFacadeRoot)' == ''">$(MSBuildThisFileDirectory)..\ImageFacade\src\</ImageFacadeRoot>
+    <ImageFacadeCoreProject Condition="'$(ImageFacadeCoreProject)' == ''">$(ImageFacadeRoot)ImageFacade\ImageFacade.csproj</ImageFacadeCoreProject>
+    <ImageFacadeSoftProject Condition="'$(ImageFacadeSoftProject)' == ''">$(ImageFacadeRoot)ImageFacade.SdcbSimdCodecs\ImageFacade.SdcbSimdCodecs.csproj</ImageFacadeSoftProject>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Deterministic>true</Deterministic>
+    <IsPackable>false</IsPackable>
+    <Company>sevencat</Company>
+    <RepositoryUrl>https://github.com/sevencat/SimdOnnxExt.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <!-- 引擎引用：本地源码优先，缺失时给出可执行的提示而不是一堆 CS0246 -->
+  <ItemGroup Condition="'$(UseLocalSimdOnnx)' == 'true' And Exists('$(SimdOnnxProjectPath)')">
+    <ProjectReference Include="$(SimdOnnxProjectPath)" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseLocalSimdOnnx)' != 'true'">
+    <PackageReference Include="Sdcb.SimdOnnx" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseLocalImageFacade)' == 'true' And Exists('$(ImageFacadeCoreProject)')">
+    <ProjectReference Include="$(ImageFacadeCoreProject)" />
+    <ProjectReference Include="$(ImageFacadeSoftProject)" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UseLocalImageFacade)' != 'true'">
+    <PackageReference Include="Sevencat.ImageFacade" />
+    <PackageReference Include="Sevencat.ImageFacade.SdcbSimdCodecs" />
+  </ItemGroup>
+
+  <Target Name="SimdOnnxMissing" BeforeTargets="PrepareForBuild"
+          Condition="'$(UseLocalSimdOnnx)' == 'true' And !Exists('$(SimdOnnxProjectPath)') And '$(MSBuildProjectName)' != 'Sdcb.SimdOnnx'">
+    <Error Text="找不到引擎工程：$(SimdOnnxProjectPath)。请把 SimdOnnx 仓库放在本仓库同级目录，或用 -p:UseLocalSimdOnnx=false 走包引用。" />
+  </Target>
+
+  <Target Name="ImageFacadeMissing" BeforeTargets="PrepareForBuild"
+          Condition="'$(UseLocalImageFacade)' == 'true' And !Exists('$(ImageFacadeCoreProject)')">
+    <Error Text="找不到图像门面工程：$(ImageFacadeCoreProject)。请把 ImageFacade 仓库放在本仓库同级目录，或用 -p:UseLocalImageFacade=false 走 nuget 包。" />
+  </Target>
+</Project>

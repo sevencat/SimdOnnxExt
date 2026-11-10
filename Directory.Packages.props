@@ -1,0 +1,24 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- 测试：与 SimdOnnx 仓库保持同一套版本 -->
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
+    <PackageVersion Include="Xunit.SkippableFact" Version="1.5.85" />
+    <!-- 图像处理门面（Apache-2.0，纯托管）：核心 + 软后端（自绘 + 可插拔编解码）。
+         nuget 0.1.0 已包含 Letterbox / Tensorizer / Nms / DetectionDrawing；本地源码优先只为跟上未发布的小版本。 -->
+    <PackageVersion Include="Sevencat.ImageFacade" Version="0.1.0" />
+    <PackageVersion Include="Sevencat.ImageFacade.SdcbSimdCodecs" Version="0.1.0" />
+    <!-- 软后端只依赖 Sdcb.SimdCodecs.Abstractions：用到的图片格式在这里按需登记（CLI 会引包） -->
+    <PackageVersion Include="Sdcb.SimdCodecs.Jpeg" Version="2.0.0" />
+    <PackageVersion Include="Sdcb.SimdCodecs.Png" Version="2.0.0" />
+    <PackageVersion Include="Sdcb.SimdCodecs.Webp" Version="2.0.0" />
+    <PackageVersion Include="Sdcb.SimdCodecs.Bmp" Version="2.0.0" />
+    <!-- 引擎包引用通道（-p:UseLocalSimdOnnx=false）。注意：Sdcb.SimdOnnx 目前**不在** nuget.org，
+         走这条通道需要 nuget.config 里配 ProGet 测试源；精确版本，避免 pre-release 内部 API 漂移。 -->
+    <PackageVersion Include="Sdcb.SimdOnnx" Version="[0.1.0]" />
+  </ItemGroup>
+</Project>

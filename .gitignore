@@ -1,0 +1,29 @@
+# ---- dotnet ----
+[Bb]in/
+[Oo]bj/
+artifacts/
+*.user
+*.suo
+.vs/
+.vscode/*
+!.vscode/settings.json
+
+# ---- packages / tooling ----
+*.nupkg
+*.snupkg
+tools/nupkgs/
+
+# ---- models: 权重与大文件不入库（保留 manifest / 下载脚本 / 说明）----
+models/*
+!models/README.md
+!models/manifest.json
+!models/fetch-models.ps1
+*.onnx
+*.onnx.data
+*.pt
+*.pth
+*.sytrain
+
+# ---- 本地临时 ----
+*.log
+docs/.enc-test.md

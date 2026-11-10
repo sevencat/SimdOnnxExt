@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>simdonnxx</AssemblyName>
+    <RootNamespace>Sdcb.SimdOnnxExt.Cli</RootNamespace>
+    <PackageId>Sdcb.SimdOnnxExt.Cli</PackageId>
+    <Description>SimdOnnxExt 命令行走廊：inspect / run / ocr / sam / bench（逐步落地）。</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SimdOnnxExt\SimdOnnxExt.csproj" />
+  </ItemGroup>
+</Project>

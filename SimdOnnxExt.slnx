@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SimdOnnxExt/SimdOnnxExt.csproj" />
+    <Project Path="src/SimdOnnxExt.Cli/SimdOnnxExt.Cli.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SimdOnnxExt.Tests/SimdOnnxExt.Tests.csproj" />
+  </Folder>
+</Solution>

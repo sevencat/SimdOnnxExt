@@ -1,0 +1,33 @@
+{
+  "id": "yolo11n-opset12",
+  "model": "F:\\code\\SimdYolo\\models\\onnx\\yolo11n-opset12.onnx",
+  "model_sha256": "7f77397d0274c86f62862d776754e439d36c0ce9bbd026bbedf543de012bc75b",
+  "input": {
+    "name": "images",
+    "shape": [
+      1,
+      3,
+      128,
+      128
+    ],
+    "file": "input.f32",
+    "recipe": "v[i] = ((i * 0.6180339887498949) mod 1) * 2 - 1, i = flat index (NCHW)"
+  },
+  "outputs": [
+    {
+      "name": "output0",
+      "file": "out.0.output0.f32",
+      "shape": [
+        1,
+        84,
+        336
+      ]
+    }
+  ],
+  "recorded_at": "2026-11-10T07:31:52+00:00",
+  "runtime": {
+    "onnxruntime": "1.31.1",
+    "numpy": "2.5.4",
+    "provider": "CPUExecutionProvider"
+  }
+}

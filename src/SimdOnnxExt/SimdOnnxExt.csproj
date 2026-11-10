@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>Sdcb.SimdOnnxExt</AssemblyName>
+    <RootNamespace>Sdcb.SimdOnnxExt</RootNamespace>
+    <PackageId>Sdcb.SimdOnnxExt</PackageId>
+    <Description>用 Sdcb.SimdOnnx 公共 API 把 YOLO / RF-DETR / SAM3 / OCR 包成一键调用的统一门面：模型族自动识别、CPU/Vulkan 后端选择、每族预处理与解码。</Description>
+    <PackageTags>Sdcb;ONNX;SIMD;Vulkan;YOLO;RF-DETR;SAM3;OCR</PackageTags>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+  <!-- 引擎与 ImageFacade 的引用由 Directory.Build.props 统一挂载（本地源码优先，可切 nuget）。 -->
+</Project>
