@@ -35,6 +35,9 @@
 | `yolov10n.onnx` / `yolo26n.onnx` | `output0 1x300x6` | 上表 + `TopK 2` `GatherElements 2` `ConstantOfShape 2` `Expand 2` `Tile 2` `Flatten 2` `ReduceMax 1` `Mod 1` | 端到端头（图内 top-k） | **P** 剪尾自写 top-k，或 **E-03** | M2-03 |
 | `rfdetr-small.onnx`（1537 节点 / 354 权重） | `input 1x3x512x512` → `dets 1x300x4` + `labels 1x300x91` | `Cast 36` `Expand 9` `Where 8` `ConstantOfShape 7` `Equal 6` `ReduceSum 4` `Gather 4` `Sin 4` `Cos 4` `Not 3` `Exp 3` `GridSample 3` `Tile 2` `GatherElements 2` `Greater 2` `Less 1` `And 1` `ReduceMax 1` `TopK 1`（另 `MatMul 140` `LayerNormalization 49` `Softmax 18` `Erf 12` `Conv 9` `Gemm 3`） | 19 类算子 + 双输出（DINO 式 deformable decoder 的 `GridSample`/`TopK`/`Sin/Cos`） | **E-03 + E-02**，解码走 **H** | M4-01..M4-04 |
 | SAM3（`wkentaro/sam3-onnx` v0.6.0） | image encoder / language encoder（`tokens int64 1x32`）/ decoder | 待下载 fixture 后补本行 | 已知：int64 图输入、多输出；注意力算子待实测 | **E-04/P + E-02**，tokenizer 与后处理走 **H** | M5-01..M5-06 |
+| PP-OCRv6 tiny det（`Sdcb.SimdPaddleOCR.Models.ChineseV6Tiny`） | `x[N,3,H,W]` 动态 → `[N,1,h,w]` | opset 14，242 节点；`Conv/Mul/Add/Relu/Div/Erf/HardSigmoid/GlobalAveragePool/Resize/ReduceMean/ConvTranspose/MaxPool/Sigmoid` | 无算子缺口（**COMPILES** @1,3,960,960） | **H**（DB 后处理） | M3-01 |
+| PP-OCRv6 tiny rec | `x[N,3,48,W]` 动态 → `[N,T,6906]` | opset 11，217 节点；输出**已带 Softmax**（分值即概率） | 无算子缺口（**COMPILES** @1,3,48,320） | **H**（CTC + 字典） | M3-02 |
+| PP-LCNet 文本行方向 cls | `x[N,3,80,160]` → `[N,2]` | opset 7，116 节点；`Softmax` 在 `[N,2]` 上（末维） | 无算子缺口（**COMPILES** @1,3,80,160） | **H**（180° 判定的接线） | M3-03 |
 | PP-OCRv6（SimdPaddleOCR） | det `1x3x960x960` / rec `1x3x48xW` / cls | 引擎已由 SimdPaddleOCR 跑通；解码有 `CtcProjection` / `CtcGreedyDecoder` 公共 API | 无算子缺口 | **H** | M3-01..M3-05 |
 
 ## 4. 复现命令（`simdonnxx inspect`）

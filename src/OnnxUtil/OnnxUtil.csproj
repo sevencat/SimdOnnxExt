@@ -13,4 +13,9 @@
     <PackageReference Include="Sdcb.SimdCodecs.Jpeg" />
     <PackageReference Include="Sdcb.SimdCodecs.Png" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- OCR 模型来源：模型包只提供 ONNX 流 + 字典，不含推理代码，和本地引擎工程不冲突 -->
+    <PackageReference Include="Sdcb.SimdPaddleOCR.Models.ChineseV6Tiny" />
+    <PackageReference Include="Sdcb.SimdPaddleOCR.Models.TextLineOrientation" />
+  </ItemGroup>
 </Project>

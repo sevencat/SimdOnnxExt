@@ -61,11 +61,11 @@
 
 | ID | 任务 | 状态 | 验收 | 备注 |
 |---|---|---|---|---|
-| M3-01 | det + DB 后处理（二值化 / 连通域 / UNCLIP） | todo | 行框与 SimdPaddleOCR 一致 | 纯 C#，无 OpenCV |
-| M3-02 | rec + 字典（`CtcProjection` / `CtcGreedyDecoder`） | todo | 文本逐行一致，分数差 ≤ 1e-4 | 引擎已提供解码 API |
-| M3-03 | 方向分类 cls 接入 | todo | 180 度样本纠正率一致 | 可关闭 |
-| M3-04 | `VkBatch` + `ArgMaxUnits` 行批处理 | todo | Vulkan 吞吐显著优于逐行 | 引擎 VkBatch 正为此设计 |
-| M3-05 | 与 SimdPaddleOCR 逐行对齐 + 可视化 | todo | 同一数据集 100 图全一致 | 可复用其模型包 |
+| M3-01 | det + DB 后处理（二值化 / 连通域 / UNCLIP） | done | 行框与 SimdPaddleOCR 一致 | PaddleOcrPipeline det：DB 概率图->纯 C# 连通域->轴对齐框->面积/周长外扩；bus.jpg 上 8 行 |
+| M3-02 | rec + 字典（`CtcProjection` / `CtcGreedyDecoder`） | done | 文本逐行一致，分数差 ≤ 1e-4 | rec：裁剪->高 48 等比缩放->引擎 CtcGreedyDecoder；字典 6906 类；合成中文 你好世界/123 全对 |
+| M3-03 | 方向分类 cls 接入 | done | 180 度样本纠正率一致 | PP-LCNet 方向分类接线：80x160 输入、softmax 后 p>0.9 才旋转 180 |
+| M3-04 | `VkBatch` + `ArgMaxUnits` 行批处理 | todo | Vulkan 吞吐显著优于逐行 | 现在逐行跑，还没有批处理 |
+| M3-05 | 与 SimdPaddleOCR 逐行对齐 + 可视化 | todo | 同一数据集 100 图全一致 | 已有 bus.jpg + 合成中文两条回归；还差对照数据集 |
 
 ## 阶段 4 · SAM3（任务 ID `M5-*`，暂缓）
 
@@ -100,6 +100,10 @@
 | E-04 | 图输入 int64 → float 通道（或等价改造） | todo | SAM3 文本 tokens 可直接喂 | 或改用 P |
 | E-05 | E-03 的 Vulkan / Metal 发射 | todo | GPU 目标不逐节点回退 | 引擎规则：不支持就不能选目标 |
 | E-06 | 公共面暴露图 I/O 形状与节点属性（或一个 EngineCapabilities 支持集 API） | todo | ext 的 `OnnxHeader` 头部扫描可以删掉 | 目前 `OnnxModel` 只有 Opset/Nodes/InitializerShape |
+
+
+
+
 
 
 

@@ -18,7 +18,17 @@ dotnet run --project src\OnnxUtil.Cli -- run `
 
 # 体检一个模型：引擎编译探测 + 算子直方图 + 缺口路线（E/P/H）
 dotnet run --project src\OnnxUtil.Cli -- inspect -m <model.onnx>
+
+# OCR：PP-OCRv6 tiny（DB 检测 → 文本行方向分类 → CTC 识别 → 字典输出），画框并另存
+dotnet run --project src\OnnxUtil.Cli -- ocr -i tests\assets\bus.jpg -o out\bus-ocr.jpg --backend cpu
 ```
+
+实测（bus.jpg，CPU）：
+
+- YOLO：5 个目标（`person 0.679 / person 0.417 / car 0.383 / person 0.326 / bus 0.296`），单帧 335 ms。
+- OCR：8 行文本，`cero 0.996`、`emisiones 0.928`、`eléctricamEMTe 0.874`（公交车漆面上的小字会糊，tiny 模型的正常表现），约 0.7 s。
+- 另有一个自包含回归：用 ImageFacade 画「你好世界 / OnnxUtil 123」再读回来，中文与数字全对
+  （`tests/OnnxUtil.Tests/OcrEndToEndTests.cs`）。
 
 实测（bus.jpg，810×1080，`--conf 0.20`，CPU）：5 个目标（`person 0.679 / person 0.417 / car 0.383 /
 person 0.326 / bus 0.296`），单帧 335 ms（Debug 构建，含预处理与后处理）；Vulkan 也能跑通，但存在
