@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Sdcb.SimdOnnxExt.Tests;
+namespace OnnxUtil.Tests;
 
 /// <summary>
 /// 一份 ORT 金标准（<c>tools/fixtures/record.py</c> 录制）。测试只读产物，不依赖 onnxruntime。
@@ -30,13 +30,13 @@ internal sealed class GoldenFixture
     public MetaTensor Input { get; }
     public MetaTensor[] Outputs { get; }
 
-    /// <summary>仓库根（含 <c>SimdOnnxExt.slnx</c>）。</summary>
+    /// <summary>仓库根（含 <c>OnnxUtil.slnx</c>）。</summary>
     public static string? RepositoryRoot
     {
         get
         {
             DirectoryInfo? dir = new(AppContext.BaseDirectory);
-            while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "SimdOnnxExt.slnx"))) dir = dir.Parent;
+            while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "OnnxUtil.slnx"))) dir = dir.Parent;
             return dir?.FullName;
         }
     }

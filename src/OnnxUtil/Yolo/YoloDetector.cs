@@ -1,8 +1,8 @@
 using ImageFacade;
 using ImageFacade.Pipeline;
-using Sdcb.SimdOnnxExt.Imaging;
+using OnnxUtil.Imaging;
 
-namespace Sdcb.SimdOnnxExt.Yolo;
+namespace OnnxUtil.Yolo;
 
 /// <summary>一次检测的结果（源图坐标 + 类别/分数）。</summary>
 public sealed record YoloDetection(int ClassId, string Label, float Score, RectF Box)

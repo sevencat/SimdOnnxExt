@@ -2,17 +2,17 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
 using ImageFacade;
-using Sdcb.SimdOnnxExt;
-using Sdcb.SimdOnnxExt.Imaging;
-using Sdcb.SimdOnnxExt.Onnx;
-using Sdcb.SimdOnnxExt.Yolo;
+using OnnxUtil;
+using OnnxUtil.Imaging;
+using OnnxUtil.Onnx;
+using OnnxUtil.Yolo;
 
-// simdonnxx：SimdOnnxExt 的命令行入口。
+// simdonnxx：OnnxUtil 的命令行入口。
 // 目前只有 inspect（M0-03）；run / ocr / sam / bench 随 M1..M5 落地。
 // 约定：结果写标准输出，异常写标准错误；0 = 可运行，1 = 有缺口/失败，2 = 参数错误。
 
 const string Usage = """
-simdonnxx — SimdOnnxExt 命令行
+simdonnxx — OnnxUtil 命令行
 
   inspect -m <model.onnx> [--shape 1,3,640,640] [--no-probe] [--json]
       体检一个 ONNX：引擎编译探测（能不能跑）+ 算子直方图 + 缺口与路线（E/P/H）。

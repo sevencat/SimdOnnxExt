@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/OnnxUtil/OnnxUtil.csproj" />
+    <Project Path="src/OnnxUtil.Cli/OnnxUtil.Cli.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/OnnxUtil.Tests/OnnxUtil.Tests.csproj" />
+  </Folder>
+</Solution>

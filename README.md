@@ -1,4 +1,4 @@
-# SimdOnnxExt
+# OnnxUtil
 
 用纯托管 C# 推理引擎 [Sdcb.SimdOnnx](https://github.com/sdcb/SimdOnnx) 的**公共 API**，把
 **YOLO / RF-DETR / SAM3 / OCR（PP-OCRv6）** 包成"一键调用"：统一的对象 API + 一个 CLI，
@@ -12,12 +12,12 @@ CPU（SIMD）与 Vulkan / Metal 同一套代码，不引入 ONNX Runtime、OpenC
 ```powershell
 # YOLO 检测：读图 → letterbox → 引擎推理 → DFL/NMS → 把框画回原图 → 存盘
 # 目前能跑的导出是 SimdYolo 的 *-opset12.onnx（128x128）；640 的新导出在等引擎的 Softmax 任意轴（E-01）
-dotnet run --project src\SimdOnnxExt.Cli -- run `
+dotnet run --project src\OnnxUtil.Cli -- run `
     -m F:\code\SimdYolo\models\onnx\yolo11n-opset12.onnx `
     -i tests\assets\bus.jpg -o out\bus.jpg --conf 0.20
 
 # 体检一个模型：引擎编译探测 + 算子直方图 + 缺口路线（E/P/H）
-dotnet run --project src\SimdOnnxExt.Cli -- inspect -m <model.onnx>
+dotnet run --project src\OnnxUtil.Cli -- inspect -m <model.onnx>
 ```
 
 实测（bus.jpg，810×1080，`--conf 0.20`，CPU）：5 个目标（`person 0.679 / person 0.417 / car 0.383 /
@@ -33,14 +33,21 @@ simdonnxx sam   -i bus.jpg --models models\sam3\ --text person                  
 simdonnxx prep  -m x.onnx                                                         # 剪枝/单输出封装
 ```
 
-库侧同一个入口：
+库侧同一个入口（当前已实现的部分）：
 
 ```csharp
-using Sdcb.SimdOnnxExt;
+using OnnxUtil;
+using OnnxUtil.Imaging;
+using OnnxUtil.Yolo;
 
-using var zoo = SimdOnnxZoo.Open(new ZooOptions { Backend = BackendKind.Auto });
-using IVisionModel model = zoo.Load(@"models\yolo\yolo11n-opset12.onnx");
-VisionResult result = model.Run(pixels, width, height, stride, PixelFormat.Bgr24);
+using ImageEngine engine = ImageHost.CreateEngine();          // ImageFacade 软后端 + JPEG/PNG
+using FacadeImage image = engine.Load("bus.jpg");
+
+using YoloDetector detector = YoloDetector.Load("yolo11n-opset12.onnx", BackendKind.Auto, confidence: 0.25f);
+YoloDetection[] detections = detector.Detect(image);           // 源图坐标
+
+detector.Draw(image, detections);                              // 也可自己用 DetectionDrawing
+image.Save("bus.detected.jpg");
 ```
 
 ## 为什么需要这一层
@@ -65,9 +72,10 @@ DFL 解码与 NMS、DETR 的 top-k、SAM 的提示编码与掩码上采样、OCR
 
 | 路径 | 内容 |
 |---|---|
-| `src/` | 核心库 + 每族适配器 + CLI（M0 起逐步落地） |
-| `tools/` | `progress.ps1`（进度自更新）、`SimdOnnxExt.ModelPrep`（M2 起）、fixture 记录脚本 |
-| `tests/` | 金标准对齐、CPU↔Vulkan 一致、CLI e2e |
+| `src/OnnxUtil/` | **唯一的库项目**：`Imaging/`（ImageFacade 接入）、`Onnx/`（头部扫描 + 体检）、`Yolo/`（检测解码）；以后 OCR / RF-DETR / SAM3 也放这里，不再按族拆项目 |
+| `src/OnnxUtil.Cli/` | 可执行 `simdonnxx`（inspect / run / …） |
+| `tools/` | `progress.ps1`（进度自更新）、`fixtures/record.py`、`OnnxUtil.ModelPrep`（P 路线工具，M2 起） |
+| `tests/` | 金标准对齐、CPU↔Vulkan 一致、CLI e2e；`tests/assets/` 放小样例图 |
 | `bench/` | CPU / Vulkan 与 onnxruntime 的 A/B |
 | `docs/` | 计划、进度、差距矩阵、决策记录 |
 | `models/` | fixture 清单（权重不入库） |
@@ -80,7 +88,7 @@ DFL 解码与 NMS、DETR 的 top-k、SAM 的提示编码与掩码上采样、OCR
 F:\code\
   SimdOnnx\        # github.com/sdcb/SimdOnnx        （引擎，未上 nuget.org，必须同级或私有源）
   ImageFacade\     # github.com/sevencat/ImageFacade （本地 0.2.0；也可切 nuget 0.1.0）
-  SimdOnnxExt\     # 本仓库
+  SimdOnnxExt\     # 本仓库（程序集/命名空间 = OnnxUtil，目录名沿用远端仓库名）
 ```
 
 ```powershell

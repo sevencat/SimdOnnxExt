@@ -1,4 +1,4 @@
-namespace Sdcb.SimdOnnxExt;
+namespace OnnxUtil;
 
 /// <summary>
 /// 执行后端。<see cref="Auto"/> 会尝试 Vulkan（Metal 在 macOS 上由同一条路径命中），

@@ -1,7 +1,7 @@
 using ImageFacade;
 using ImageFacade.Pipeline;
 
-namespace Sdcb.SimdOnnxExt.Yolo;
+namespace OnnxUtil.Yolo;
 
 /// <summary>
 /// YOLOv8/v9/v11/v26 检测头解码：输出是 <c>[1, 4 + nc, anchors]</c>，

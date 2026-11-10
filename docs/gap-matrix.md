@@ -41,9 +41,9 @@
 
 ```powershell
 # 引擎编译探测 + 算子直方图 + 缺口路线（M0-03 起可用）
-dotnet run --project src\SimdOnnxExt.Cli -- inspect -m F:\code\SimdYolo\models\onnx\yolo11n.onnx
-dotnet run --project src\SimdOnnxExt.Cli -- inspect -m F:\code\SimdYolo\models\onnx\yolo11n-opset12.onnx   # COMPILES
-dotnet run --project src\SimdOnnxExt.Cli -- inspect -m F:\code\TinyLabel\train\testrftedr\runs\rfdetr-small.onnx --no-probe
+dotnet run --project src\OnnxUtil.Cli -- inspect -m F:\code\SimdYolo\models\onnx\yolo11n.onnx
+dotnet run --project src\OnnxUtil.Cli -- inspect -m F:\code\SimdYolo\models\onnx\yolo11n-opset12.onnx   # COMPILES
+dotnet run --project src\OnnxUtil.Cli -- inspect -m F:\code\TinyLabel\train\testrftedr\runs\rfdetr-small.onnx --no-probe
 ```
 
 `inspect` 的判定顺序：**先让引擎编译**（唯一可靠的"能不能跑"，报错会点名节点），再用头部扫描补
@@ -64,7 +64,7 @@ $code | & $py - F:\code\SimdYolo\models\onnx\yolo11n.onnx
 | 2026-11-10 | YOLO11n(128) 在 Vulkan 上**能跑、输出有限**，但与 CPU 不一致 | 最大绝对偏差 **3.502E-001 @#967**（`[1,84,336]` 的第 2 行，DFL 框距离段）；CPU vs ORT 只有 5.493E-004 | M1-05 排查 |
 
 怀疑方向：4-D DFL `Softmax`（`[1,336,4,16]`）或 `MatMul` 的 fp16 路径。引擎自己的设备验证覆盖
-OCR / GcdrNet，YOLO 的这条路径没有设备记录；`tests/SimdOnnxExt.Tests/PipelineSmokeTests.GpuBackend_MatchesCpu`
+OCR / GcdrNet，YOLO 的这条路径没有设备记录；`tests/OnnxUtil.Tests/PipelineSmokeTests.GpuBackend_MatchesCpu`
 以 `Skip` 保留该断言，定位后去掉 Skip。在此之前 GPU 只保证"能跑"（`GpuBackend_RunsAndProducesFiniteOutput`）。
 
 ## 6. 结论
@@ -74,4 +74,4 @@ OCR / GcdrNet，YOLO 的这条路径没有设备记录；`tests/SimdOnnxExt.Test
    本仓库只需写 DFL 解码、DETR top-k、掩码上采样、OCR 的 DB 后处理与 CTC 解码。
 2. **YOLO 新导出的 DFL** 只差一个"Softmax 任意轴"，是引擎里性价比最高的改动（E-01）。
 3. **seg / RF-DETR / SAM3 的共同前置是多输出**（E-02）；RF-DETR 还额外要 E-03 那批判算子，SAM3 还要 int64 输入改造（E-04）。
-4. 所有"剪掉尾部"的诉求都要 **P**（离线 ONNX 读写），因为引擎先 emit 后剪枝——这也是 `tools/SimdOnnxExt.ModelPrep` 存在的理由。
+4. 所有"剪掉尾部"的诉求都要 **P**（离线 ONNX 读写），因为引擎先 emit 后剪枝——这也是 `tools/OnnxUtil.ModelPrep` 存在的理由。

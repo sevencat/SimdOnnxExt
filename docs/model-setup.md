@@ -52,7 +52,7 @@ $py = 'F:\code\TinyLabel\train\py314\python\python.exe'   # onnx 1.23.2 + onnxru
     --id yolo11n-opset12
 
 # 校验：C# 侧读产物、跑引擎、逐元素比对（已入库的 9 个测试之一）
-dotnet test tests\SimdOnnxExt.Tests -c Release --filter FullyQualifiedName~GoldenParity
+dotnet test tests\OnnxUtil.Tests -c Release --filter FullyQualifiedName~GoldenParity
 ```
 
 录制规范（`record.py` 已实现）：

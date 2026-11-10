@@ -1,4 +1,4 @@
-namespace Sdcb.SimdOnnxExt.Onnx;
+namespace OnnxUtil.Onnx;
 
 /// <summary>
 /// 最小 protobuf 读取器：只解析 ONNX 头部字段，数据块（raw_data / float_data）一律按长度跳过。

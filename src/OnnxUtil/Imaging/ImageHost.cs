@@ -5,7 +5,7 @@ using ImageFacade.SdcbSimdCodecs;
 using Sdcb.SimdCodecs.Jpeg;
 using Sdcb.SimdCodecs.Png;
 
-namespace Sdcb.SimdOnnxExt.Imaging;
+namespace OnnxUtil.Imaging;
 
 /// <summary>
 /// 图像侧的唯一接入点：ImageFacade 的门面引擎（纯托管软后端）+ 本仓库的默认约定。

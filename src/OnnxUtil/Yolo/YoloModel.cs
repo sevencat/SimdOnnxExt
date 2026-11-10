@@ -1,8 +1,8 @@
 using System.Text.RegularExpressions;
 using Sdcb.SimdOnnx.Onnx;
-using Sdcb.SimdOnnxExt.Onnx;
+using OnnxUtil.Onnx;
 
-namespace Sdcb.SimdOnnxExt.Yolo;
+namespace OnnxUtil.Yolo;
 
 /// <summary>
 /// 一个 YOLO 模型：图 + 元数据（Ultralytics 会写 <c>task</c> 与 <c>names</c>）+ 输入/输出形状。

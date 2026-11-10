@@ -1,8 +1,8 @@
 using ImageFacade;
-using Sdcb.SimdOnnxExt.Imaging;
-using Sdcb.SimdOnnxExt.Yolo;
+using OnnxUtil.Imaging;
+using OnnxUtil.Yolo;
 
-namespace Sdcb.SimdOnnxExt.Tests;
+namespace OnnxUtil.Tests;
 
 /// <summary>
 /// M1 的端到端回归：`tests/assets/bus.jpg`（810x1080，Ultralytics 官方样例）→ letterbox → 引擎 →

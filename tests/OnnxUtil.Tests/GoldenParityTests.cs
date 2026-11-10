@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using Sdcb.SimdOnnx.Engine;
 using Sdcb.SimdOnnx.Onnx;
 
-namespace Sdcb.SimdOnnxExt.Tests;
+namespace OnnxUtil.Tests;
 
 /// <summary>
 /// M0-04 / M1-02 的数值基线：引擎 CPU 前向 vs onnxruntime 录制的金标准。

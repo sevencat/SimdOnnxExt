@@ -1,4 +1,4 @@
-# SimdOnnxExt 计划（单一事实源）
+# OnnxUtil 计划（单一事实源）
 
 > 本文件是**唯一可手改**的计划。任务行格式固定：`| ID | 任务 | 状态 | 验收 | 备注 |`；
 > 状态只能是 `todo` / `doing` / `blocked` / `done`；单元格内不要出现 `|`。
@@ -9,7 +9,7 @@
 
 **三条消解路线**（每个缺口必须落一条，写进"备注"或 `gap-matrix.md`）：
 `E` = 改引擎（新的 ONNX 逻辑算子 / 多输出 / Softmax 任意轴 / int64 图输入改造，走 SimdOnnx PR）；
-`P` = 离线图预处理（剪枝、单输出封装、等价改写，工具在 `tools/SimdOnnxExt.ModelPrep`）；
+`P` = 离线图预处理（剪枝、单输出封装、等价改写，工具在 `tools/OnnxUtil.ModelPrep`）；
 `H` = 主机侧 C# 实现（模型族专属解码：DFL、DETR top-k、掩码上采样、OCR 的 DB 后处理与 CTC、SAM3 tokenizer；
 通用图像操作——加载/保存、letterbox、NCHW/NHWC 张量化、NMS、绘制与文字——一律用 `sevencat/ImageFacade`，不重复实现）。
 
@@ -17,7 +17,7 @@
 
 | ID | 任务 | 状态 | 验收 | 备注 |
 |---|---|---|---|---|
-| M0-01 | 建 slnx、构建属性、UseLocalSimdOnnx / UseLocalImageFacade 引用开关 | done | `dotnet build` 通过；`-p:UseLocalSimdOnnx=false`、`-p:UseLocalImageFacade=false` 均能走包引用 | 两条通道均绿：本地 ImageFacade 0.2.0/0.1.1 与 nuget 0.1.0 各 3 测试通过；并修复 ImageFacade 软后端 csproj 的 MSB4025（注释含双连字符） |
+| M0-01 | 建 slnx、构建属性、UseLocalSimdOnnx / UseLocalImageFacade 引用开关 | done | `dotnet build` 通过；`-p:UseLocalSimdOnnx=false`、`-p:UseLocalImageFacade=false` 均能走包引用 | 构建结构定型：单库项目 OnnxUtil（Yolo 等族放子目录）+ OnnxUtil.Cli + OnnxUtil.slnx；命名空间/程序集统一 OnnxUtil；Release 构建与 17 个测试通过 |
 | M0-02 | 进度规范：AGENTS.md + progress.ps1 + PROGRESS 生成 + CI 校验 | done | `-Check` 退出码 0；`-Set` 能改状态并追加日志 | AGENTS.md + progress.ps1 + PROGRESS 生成 + CI 校验 已落地 |
 | M0-03 | GraphReport + `simdonnxx inspect`：算子直方图 / IO / 引擎编译探测 / E-P-H 路线 | done | yolo11n.onnx 报出引擎原话的 Softmax 阻断 + E-01；opset12 报 COMPILES | GraphInspector + simdonnxx inspect：yolo11n 报引擎原话 Softmax axis=1 + E-01；opset12(128x128) COMPILES；8 个测试全绿 |
 | M0-04 | fixture 约定 + ORT 金标准记录脚本骨架 | done | 一条命令产出 `tests/Fixtures/*.json` + `*.f32` | record.py + GoldenFixture + GoldenParityTests：yolo11n-opset12 引擎输出 vs ORT 最大偏差 5.493e-4（302KiB fixture 入库），9 测试全绿 |
@@ -86,7 +86,7 @@
 |---|---|---|---|---|
 | M6-01 | models 下载脚本 + 许可证清单 | todo | `models\fetch-models.ps1` 可拉到全部 fixture | 记录 AGPL / Meta 许可 |
 | M6-02 | bench 报告（CPU / Vulkan vs ORT） | todo | median、warmup、设备面包屑齐全 | 口径见 AGENTS.md |
-| M6-03 | NuGet 打包（`Sdcb.SimdOnnxExt.*`） | todo | 包内容审计无多余依赖 | 依赖引擎精确版本 |
+| M6-03 | NuGet 打包（`OnnxUtil.*`） | todo | 包内容审计无多余依赖 | 依赖引擎精确版本 |
 | M6-04 | 中文 README + 各族文档 | todo | 一篇一个模型族的用法 | |
 | M6-05 | 可选 Web 演示（上传图 → 结果） | todo | 三个族各一条链路可用 | 非必须 |
 
@@ -100,6 +100,7 @@
 | E-04 | 图输入 int64 → float 通道（或等价改造） | todo | SAM3 文本 tokens 可直接喂 | 或改用 P |
 | E-05 | E-03 的 Vulkan / Metal 发射 | todo | GPU 目标不逐节点回退 | 引擎规则：不支持就不能选目标 |
 | E-06 | 公共面暴露图 I/O 形状与节点属性（或一个 EngineCapabilities 支持集 API） | todo | ext 的 `OnnxHeader` 头部扫描可以删掉 | 目前 `OnnxModel` 只有 Opset/Nodes/InitializerShape |
+
 
 
 

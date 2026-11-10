@@ -1,4 +1,4 @@
-namespace Sdcb.SimdOnnxExt.Onnx;
+namespace OnnxUtil.Onnx;
 
 /// <summary>ONNX 里的一个张量声明（图输入 / 输出 / 权重）。符号维记 −1，原文留在 <see cref="Symbols"/>。</summary>
 public sealed record OnnxTensorSpec(string Name, int ElementType, int[] Dims, string?[] Symbols)

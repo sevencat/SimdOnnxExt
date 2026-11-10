@@ -1,5 +1,5 @@
 ﻿<#
-  SimdOnnxExt 进度工具（PowerShell 5.1 / 7 通用）
+  OnnxUtil 进度工具（PowerShell 5.1 / 7 通用）
 
   单一事实源 : docs/PLAN.md              （唯一可手改；任务表格）
   生成物     : docs/PROGRESS.md          （只能由本脚本生成，禁止手改）

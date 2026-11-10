@@ -3,7 +3,7 @@ using Sdcb.SimdOnnx.Backends.Vulkan;
 using Sdcb.SimdOnnx.Engine;
 using Sdcb.SimdOnnx.Onnx;
 
-namespace Sdcb.SimdOnnxExt;
+namespace OnnxUtil;
 
 /// <summary>
 /// 一个推理后端：把"模型 + 输入"跑成输出，屏蔽 CPU / Vulkan / Metal 的差异。

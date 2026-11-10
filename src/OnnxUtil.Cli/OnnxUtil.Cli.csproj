@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>simdonnxx</AssemblyName>
+    <RootNamespace>OnnxUtil.Cli</RootNamespace>
+    <PackageId>OnnxUtil.Cli</PackageId>
+    <Description>OnnxUtil 命令行走廊：inspect / run / ocr / sam / bench（逐步落地）。</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OnnxUtil\OnnxUtil.csproj" />
+  </ItemGroup>
+</Project>
+

@@ -1,7 +1,7 @@
 using Sdcb.SimdOnnx.Engine;
 using Sdcb.SimdOnnx.Onnx;
 
-namespace Sdcb.SimdOnnxExt.Onnx;
+namespace OnnxUtil.Onnx;
 
 /// <summary>缺口的消解路线（见 docs/gap-matrix.md）。</summary>
 public enum FixRoute
@@ -10,7 +10,7 @@ public enum FixRoute
     None = 0,
     /// <summary>改引擎：新的 ONNX 逻辑算子 / 多输出 / Softmax 任意轴 / int64 图输入。</summary>
     Engine = 1,
-    /// <summary>离线图预处理：剪枝、单输出封装、等价改写（tools/SimdOnnxExt.ModelPrep）。</summary>
+    /// <summary>离线图预处理：剪枝、单输出封装、等价改写（tools/OnnxUtil.ModelPrep）。</summary>
     Preprocess = 2,
     /// <summary>主机侧 C#：模型族专属解码（DFL / top-k / 掩码 / OCR 后处理）。</summary>
     Host = 3,

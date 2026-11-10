@@ -1,6 +1,6 @@
-using Sdcb.SimdOnnxExt.Onnx;
+using OnnxUtil.Onnx;
 
-namespace Sdcb.SimdOnnxExt.Tests;
+namespace OnnxUtil.Tests;
 
 /// <summary>
 /// M0-03：<see cref="GraphInspector"/> 在真实模型上的结论。
@@ -11,7 +11,7 @@ public class GraphInspectorTests
     private static string? Resolve(string relative, string fallback)
     {
         DirectoryInfo? dir = new(AppContext.BaseDirectory);
-        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "SimdOnnxExt.slnx"))) dir = dir.Parent;
+        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "OnnxUtil.slnx"))) dir = dir.Parent;
         if (dir is not null)
         {
             string local = Path.Combine(dir.FullName, relative);

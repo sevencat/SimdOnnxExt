@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using ImageFacade.Pipeline;
 using Sdcb.SimdOnnx.Onnx;
 
-namespace Sdcb.SimdOnnxExt.Tests;
+namespace OnnxUtil.Tests;
 
 /// <summary>
 /// M0-05 / M0-06：图像门面（letterbox 往返、中文标注）与后端抽象（CPU 对 ORT、CPU↔GPU 一致）。

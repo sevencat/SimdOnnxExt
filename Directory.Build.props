@@ -21,7 +21,7 @@
     <Deterministic>true</Deterministic>
     <IsPackable>false</IsPackable>
     <Company>sevencat</Company>
-    <RepositoryUrl>https://github.com/sevencat/SimdOnnxExt.git</RepositoryUrl>
+    <RepositoryUrl>https://github.com/sevencat/OnnxUtil.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>

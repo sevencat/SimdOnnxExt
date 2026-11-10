@@ -3,7 +3,7 @@ using ImageFacade.Pipeline;
 using ImageFacade.SdcbSimdCodecs;
 using Sdcb.SimdOnnx.Engine;
 
-namespace Sdcb.SimdOnnxExt.Tests;
+namespace OnnxUtil.Tests;
 
 /// <summary>
 /// M0-01 的依赖冒烟：证明两条引用通道（引擎 + ImageFacade）在编译期与运行期都可用。

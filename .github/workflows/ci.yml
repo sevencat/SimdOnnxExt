@@ -14,10 +14,10 @@ jobs:
       matrix:
         os: [ ubuntu-latest, windows-latest ]
     steps:
-      - name: Checkout SimdOnnxExt
+      - name: Checkout OnnxUtil
         uses: actions/checkout@v4
         with:
-          path: SimdOnnxExt
+          path: OnnxUtil
 
       # 引擎没有发布到 nuget.org：把它 checkout 成同级目录，Directory.Build.props 的
       # ..\SimdOnnx\src\Sdcb.SimdOnnx 才会解析到。ref 固定到已验证的提交，避免上游漂移。
@@ -35,13 +35,13 @@ jobs:
       # 图像门面走 nuget 0.1.0：ImageFacade 仓库的软后端 csproj 曾因注释里的双连字符（MSB4025）
       # 无法加载，修复推上去之前 CI 不能用本地通道。改好后把这一行删掉即可。
       - name: Restore
-        working-directory: SimdOnnxExt
-        run: dotnet restore SimdOnnxExt.slnx -p:UseLocalImageFacade=false
+        working-directory: OnnxUtil
+        run: dotnet restore OnnxUtil.slnx -p:UseLocalImageFacade=false
 
       - name: Build
-        working-directory: SimdOnnxExt
-        run: dotnet build SimdOnnxExt.slnx -c Release --no-restore -p:UseLocalImageFacade=false
+        working-directory: OnnxUtil
+        run: dotnet build OnnxUtil.slnx -c Release --no-restore -p:UseLocalImageFacade=false
 
       - name: Test
-        working-directory: SimdOnnxExt
-        run: dotnet test SimdOnnxExt.slnx -c Release --no-build --nologo -p:UseLocalImageFacade=false
+        working-directory: OnnxUtil
+        run: dotnet test OnnxUtil.slnx -c Release --no-build --nologo -p:UseLocalImageFacade=false

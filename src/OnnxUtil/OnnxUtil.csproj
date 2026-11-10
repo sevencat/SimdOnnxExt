@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyName>Sdcb.SimdOnnxExt</AssemblyName>
-    <RootNamespace>Sdcb.SimdOnnxExt</RootNamespace>
-    <PackageId>Sdcb.SimdOnnxExt</PackageId>
+    <AssemblyName>OnnxUtil</AssemblyName>
+    <RootNamespace>OnnxUtil</RootNamespace>
+    <PackageId>OnnxUtil</PackageId>
     <Description>用 Sdcb.SimdOnnx 公共 API 把 YOLO / RF-DETR / SAM3 / OCR 包成一键调用的统一门面：模型族自动识别、CPU/Vulkan 后端选择、每族预处理与解码。</Description>
     <PackageTags>Sdcb;ONNX;SIMD;Vulkan;YOLO;RF-DETR;SAM3;OCR</PackageTags>
     <IsPackable>true</IsPackable>

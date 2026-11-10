@@ -5,12 +5,14 @@
 
 ## 2026-11-10 — 只依赖引擎公共 API，源码引用优先
 
-**背景**：`Sdcb.SimdOnnx` 0.1.0 尚未发布到 nuget.org（走 ProGet 测试源），而本仓库是第三方扩展（MIT，`sevencat/SimdOnnxExt`），没有 `InternalsVisibleTo`。
+**背景**：`Sdcb.SimdOnnx` 0.1.0 尚未发布到 nuget.org（走 ProGet 测试源），而本仓库是第三方扩展（MIT，`sevencat/OnnxUtil`），没有 `InternalsVisibleTo`。
 **决定**：全部代码只用公共面（`OnnxModel` / `CpuModel` / `VkBackend` / `ExtOp` / `GraphPass` / `ModelHeads` / `CtcProjection` …；图像侧改用 `ImageFacade`，不再直接用 `ImageTensor` 做像素搬运）。构建默认 `ProjectReference ..\SimdOnnx\src\Sdcb.SimdOnnx`（`UseLocalSimdOnnx=true`），无源码环境用 `-p:UseLocalSimdOnnx=false` 走 `Directory.Packages.props` 的精确版本。
 **后果**：能第一时间吃到引擎修复；引擎内部改动不会把我们编译打断，但公共 API 变更会。
 **复审条件**：引擎正式发布到 nuget.org 后，把默认切回包引用并把版本号提到 `Directory.Build.props` 一处管理。
 
 ## 2026-11-10 — "一键调用" = 统一 API + 单 CLI，按模型族分适配器
+
+> **Superseded（同日）**：不再"每族一个项目"——族的代码合并进单项目 `OnnxUtil`，见本文件最后一条。
 
 **背景**：目标是用同一套东西跑 YOLO / RF-DETR / SAM3 / OCR，且新模型接进来不能每次改命令行。
 **决定**：核心库提供 `SimdOnnxZoo.Open(...)` + `IVisionModel`（`Run(pixels, w, h) -> VisionResult`）；每族一个项目做预处理/解码/后处理；CLI `simdonnxx` 只做参数与输出，族识别靠图签名（输入名/形状/输出数/`metadata_props`）。
@@ -64,3 +66,13 @@
   以 `git -C ..\ImageFacade diff` 复核。
 **后果**：`H` 路线的工作量明显缩小——只写 DFL 解码、DETR top-k、掩码上采样、OCR 的 DB 后处理与 CTC 解码；letterbox/张量化/NMS/绘制不再自研，也不用自带位图字体。代价是多一层门面 API 依赖（0.2.0 发布前 API 可能微调）。
 **复审条件**：ImageFacade 0.2.0 上 nuget 后，把包版本提到 0.2.x 并评估是否还需要 `UseLocalImageFacade` 开关；若软后端在超大掩码合成上有性能瓶颈，再考虑仅把绘制切到 SkiaSharp 后端。
+
+## 2026-11-10 — 单项目 + 命名空间统一为 OnnxUtil（取消按族拆项目、取消 Sdcb.* 前缀）
+
+**背景**：最初按"每族一个项目"（`Sdcb.SimdOnnxExt.Yolo` 等）搭建。落地 YOLO 后发现：族专属代码只有一个检测器 + 一个后处理，而跨族共享的（`ImageHost` / `InferenceBackend` / `GraphInspector` / `OnnxHeader`）远多于族专属部分——拆项目只增加引用与命名负担。
+**决定**：
+- 只保留一个库项目 `src/OnnxUtil/OnnxUtil.csproj`；各族代码用子目录（`Yolo/`，以后 `Ocr/`、`RfDetr/`、`Sam3/`），**不再新建族项目**。
+- 命名空间与程序集从 `Sdcb.SimdOnnxExt*` 统一为 `OnnxUtil*`：`OnnxUtil`、`OnnxUtil.Imaging`、`OnnxUtil.Onnx`、`OnnxUtil.Yolo`、`OnnxUtil.Cli`、`OnnxUtil.Tests`；解决方案 `OnnxUtil.slnx`；CLI 可执行名保持 `simdonnxx`。
+- 仓库目录名保留 `SimdOnnxExt`（远端仓库名不变；重命名目录会打断本地工作区与工具路径），**程序集/包/命名空间才是 `OnnxUtil`**。
+**后果**：对外只有一个 `OnnxUtil` 包；单项目会持续变大，靠目录分层而非项目分层，`IsPackable` / 依赖只有一处。CLI 与测试的引用面收敛成一个 `ProjectReference`。
+**复审条件**：若某族引入真正独占的重依赖（如 SAM3 需要 tokenizer 资源、OCR 需要大字典包），再评估拆出独立包；默认仍留在 `OnnxUtil` 内。

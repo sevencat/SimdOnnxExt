@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyName>Sdcb.SimdOnnxExt.Tests</AssemblyName>
-    <RootNamespace>Sdcb.SimdOnnxExt.Tests</RootNamespace>
+    <AssemblyName>OnnxUtil.Tests</AssemblyName>
+    <RootNamespace>OnnxUtil.Tests</RootNamespace>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
@@ -15,7 +15,6 @@
     <PackageReference Include="Xunit.SkippableFact" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\SimdOnnxExt\SimdOnnxExt.csproj" />
-    <ProjectReference Include="..\..\src\SimdOnnxExt.Yolo\SimdOnnxExt.Yolo.csproj" />
+    <ProjectReference Include="..\..\src\OnnxUtil\OnnxUtil.csproj" />
   </ItemGroup>
 </Project>
