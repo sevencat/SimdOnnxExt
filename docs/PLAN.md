@@ -30,12 +30,12 @@
 
 | ID | 任务 | 状态 | 验收 | 备注 |
 |---|---|---|---|---|
-| M1-01 | CLI 骨架 `run` / `inspect`，参数解析与退出码 | todo | `simdonnxx inspect -m x.onnx` 输出 JSON（已完成）；`run` 出结果 | inspect 随 M0-03 落地，剩 run |
-| M1-02 | CPU 跑通 `yolo11n-opset12.onnx` 并对齐 ORT | todo | 原图坐标框与 ORT 的 IoU ≥ 0.99 | 该导出 Softmax 是最后一维 |
-| M1-03 | letterbox（114 填充）与坐标还原 | todo | 与 Ultralytics 预处理逐像素一致 | ImageFacade `Letterbox.Apply` + `ToSource` |
-| M1-04 | DFL 解码 + 置信度过滤 + NMS | todo | COCO 子集结果对 ORT 一致 | DFL 自己写；NMS 用 `Nms.Suppress` |
-| M1-05 | Vulkan 后端接入与 CPU/Vulkan 一致性 | todo | fp16 下分数差 ≤ 2e-2，框 IoU ≥ 0.98 | Vulkan 一致性待查：yolo11n(128) 与 CPU 偏差 0.3502 @#967（DFL 段），断言以 Skip 保留 |
-| M1-06 | JSON 结果 + 画框/标签输出 | todo | `--draw` 出图，`--json` 出结果 | `DetectionDrawing.DrawDetections`（内置中文字体） |
+| M1-01 | CLI 骨架 `run` / `inspect`，参数解析与退出码 | done | `simdonnxx inspect -m x.onnx` 输出 JSON（已完成）；`run` 出结果 | CLI run/inspect 均可用：run 读图->letterbox->推理->DFL/NMS->画框->存盘，--json 出结果 |
+| M1-02 | CPU 跑通 `yolo11n-opset12.onnx` 并对齐 ORT | done | 原图坐标框与 ORT 的 IoU ≥ 0.99 | CPU 跑通 yolo11n-opset12：对 ORT 最大偏差 5.493e-4；bus.jpg 端到端 5 个目标 |
+| M1-03 | letterbox（114 填充）与坐标还原 | done | 与 Ultralytics 预处理逐像素一致 | ImageHost letterbox（114/居中）+ LetterboxInfo.ToSource 往返 ≤0.5px，真图坐标正确 |
+| M1-04 | DFL 解码 + 置信度过滤 + NMS | done | COCO 子集结果对 ORT 一致 | YoloPostprocess：DFL 输出解码 + 分数阈值 + class-aware NMS（ImageFacade Nms.Suppress） |
+| M1-05 | Vulkan 后端接入与 CPU/Vulkan 一致性 | doing | fp16 下分数差 ≤ 2e-2，框 IoU ≥ 0.98 | Vulkan 能跑且检测结果与 CPU 一致，但原始输出存在已知偏差 0.3502 @#967，待定位 |
+| M1-06 | JSON 结果 + 画框/标签输出 | done | `--draw` 出图，`--json` 出结果 | 默认把框画到原图并另存；--json 输出 JSON（已实测） |
 | M1-07 | 回归：COCO 子集脚本 + 文档化命令 | todo | 一条命令复现通过率 | 验收命令写进本行 |
 
 ## 阶段 1 · YOLO 全家族（seg / pose / v10 / v26，任务 ID `M2-*`）
@@ -100,6 +100,12 @@
 | E-04 | 图输入 int64 → float 通道（或等价改造） | todo | SAM3 文本 tokens 可直接喂 | 或改用 P |
 | E-05 | E-03 的 Vulkan / Metal 发射 | todo | GPU 目标不逐节点回退 | 引擎规则：不支持就不能选目标 |
 | E-06 | 公共面暴露图 I/O 形状与节点属性（或一个 EngineCapabilities 支持集 API） | todo | ext 的 `OnnxHeader` 头部扫描可以删掉 | 目前 `OnnxModel` 只有 Opset/Nodes/InitializerShape |
+
+
+
+
+
+
 
 
 

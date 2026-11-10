@@ -26,4 +26,5 @@ models/*
 
 # ---- 本地临时 ----
 *.log
+out/
 docs/.enc-test.md

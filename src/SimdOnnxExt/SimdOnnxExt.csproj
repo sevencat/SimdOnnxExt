@@ -8,4 +8,9 @@
     <IsPackable>true</IsPackable>
   </PropertyGroup>
   <!-- 引擎与 ImageFacade 的引用由 Directory.Build.props 统一挂载（本地源码优先，可切 nuget）。 -->
+  <ItemGroup>
+    <!-- 核心就带 JPEG/PNG 编解码：一键调用不该要求使用者再注册格式（纯托管，AOT 友好） -->
+    <PackageReference Include="Sdcb.SimdCodecs.Jpeg" />
+    <PackageReference Include="Sdcb.SimdCodecs.Png" />
+  </ItemGroup>
 </Project>

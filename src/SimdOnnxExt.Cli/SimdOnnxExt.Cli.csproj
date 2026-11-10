@@ -8,5 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\SimdOnnxExt\SimdOnnxExt.csproj" />
+    <ProjectReference Include="..\SimdOnnxExt.Yolo\SimdOnnxExt.Yolo.csproj" />
   </ItemGroup>
 </Project>
+

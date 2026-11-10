@@ -7,21 +7,30 @@ CPU（SIMD）与 Vulkan / Metal 同一套代码，不引入 ONNX Runtime、OpenC
 > 当前处于**骨架阶段**：计划与实时进度见 [`docs/PROGRESS.md`](docs/PROGRESS.md)，
 > 协作与自更新规范见 [`AGENTS.md`](AGENTS.md)。
 
-## 目标形态
+## 已经能用
 
 ```powershell
-# 一条命令：自动识别模型族、自动选后端、出 JSON + 标注图
-simdonnxx run -m models\yolo\yolo11n-opset12.onnx -i bus.jpg -o out\ --draw
+# YOLO 检测：读图 → letterbox → 引擎推理 → DFL/NMS → 把框画回原图 → 存盘
+# 目前能跑的导出是 SimdYolo 的 *-opset12.onnx（128x128）；640 的新导出在等引擎的 Softmax 任意轴（E-01）
+dotnet run --project src\SimdOnnxExt.Cli -- run `
+    -m F:\code\SimdYolo\models\onnx\yolo11n-opset12.onnx `
+    -i tests\assets\bus.jpg -o out\bus.jpg --conf 0.20
 
-# OCR：det + cls + rec + 字典
-simdonnxx ocr -i page.png --models models\ocr\ --dict ppocr_keys_v5.txt --draw
+# 体检一个模型：引擎编译探测 + 算子直方图 + 缺口路线（E/P/H）
+dotnet run --project src\SimdOnnxExt.Cli -- inspect -m <model.onnx>
+```
 
-# SAM3：文本 / 框 / 点提示
-simdonnxx sam -i bus.jpg --models models\sam3\ --text person
+实测（bus.jpg，810×1080，`--conf 0.20`，CPU）：5 个目标（`person 0.679 / person 0.417 / car 0.383 /
+person 0.326 / bus 0.296`），单帧 335 ms（Debug 构建，含预处理与后处理）；Vulkan 也能跑通，但存在
+已知的数值差异（见 [gap-matrix §5](docs/gap-matrix.md)）。
 
-# 新模型进不来时：先体检，再预处理
-simdonnxx inspect -m x.onnx     # 算子直方图 + 引擎兼容性 + 建议路线
-simdonnxx prep    -m x.onnx     # 剪枝 / 单输出封装 / 等价改写
+## 目标形态（逐步落地）
+
+```powershell
+simdonnxx ocr   -i page.png --models models\ocr\ --dict ppocr_keys_v5.txt --draw   # 阶段 3
+simdonnxx run   -m models\rfdetr\rfdetr-small.onnx -i bus.jpg                     # 阶段 2（等 E-02/E-03）
+simdonnxx sam   -i bus.jpg --models models\sam3\ --text person                    # 阶段 4（暂缓）
+simdonnxx prep  -m x.onnx                                                         # 剪枝/单输出封装
 ```
 
 库侧同一个入口：

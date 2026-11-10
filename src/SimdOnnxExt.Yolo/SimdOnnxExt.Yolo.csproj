@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>Sdcb.SimdOnnxExt.Yolo</AssemblyName>
+    <RootNamespace>Sdcb.SimdOnnxExt.Yolo</RootNamespace>
+    <PackageId>Sdcb.SimdOnnxExt.Yolo</PackageId>
+    <Description>YOLO（v8 / v9 / v11 / v26）检测：读模型元数据（类别名/任务），DFL 输出解码、NMS 与 letterbox 坐标还原。</Description>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SimdOnnxExt\SimdOnnxExt.csproj" />
+  </ItemGroup>
+</Project>

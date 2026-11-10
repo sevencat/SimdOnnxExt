@@ -16,5 +16,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\SimdOnnxExt\SimdOnnxExt.csproj" />
+    <ProjectReference Include="..\..\src\SimdOnnxExt.Yolo\SimdOnnxExt.Yolo.csproj" />
   </ItemGroup>
 </Project>
