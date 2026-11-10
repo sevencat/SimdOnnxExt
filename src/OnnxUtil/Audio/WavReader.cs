@@ -10,8 +10,7 @@ public sealed record WavAudio(int SampleRate, float[] Samples)
 
 /// <summary>
 /// 极简 WAV 读取器（纯托管，无依赖）：RIFF/WAVE，PCM 8/16/24/32 位与 IEEE float32，
-/// 任意声道数（按平均下混成单声道）。sherpa-onnx 的 <c>AcceptWaveform</c> 会自己重采样到 16 kHz，
-/// 所以这里保持原始采样率。
+/// 任意声道数（按平均下混成单声道）。保持原始采样率——重采样交给使用方（ASR 前端需要 16 kHz）。
 /// </summary>
 public static class WavReader
 {

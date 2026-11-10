@@ -80,15 +80,31 @@
 | M5-05 | 掩码后处理（上采样 / 阈值 / 裁剪）+ 可视化 | todo | 掩码 IoU ≥ 0.95 对 ORT | 输出 PNG |
 | M5-06 | Vulkan 对齐与性能基准 | todo | 与 CPU 同结果 | fp16 存储 |
 
-## 阶段 5 · 语音 ASR（sherpa-onnx，可选 · 任务 ID `A-*`）
+## 阶段 5 · ~~语音 ASR（sherpa-onnx，可选）~~ — **已移除**
 
-> 唯一的**原生依赖**：`org.k2fsa.sherpa.onnx` 自带 onnxruntime，默认不编译（`-p:UseSherpaOnnx=true`）。
+> sherpa 自带 Microsoft ONNX Runtime，按要求于 2026-11-10 **整体移除**（包、开关、代码、CLI 命令）。
+> 语音能力改由「阶段 6 · 纯托管 ASR（`P-*`）」承接；下表的任务保留作历史，状态置 `blocked`。
 
 | ID | 任务 | 状态 | 验收 | 备注 |
 |---|---|---|---|---|
-| A-01 | sherpa-onnx 接线：WavReader + SherpaAsr（paraformer/transducer/ctc/sensevoice/whisper）+ CLI `asr` | done | 带开关构建通过；原生绑定可加载；WAV 解析拒绝非音频 | sherpa-onnx 接线完成（可选开关 -p:UseSherpaOnnx=true）：WavReader(纯托管)+SherpaAsr(5 种模型)+CLI asr；带开关构建 0 警告、原生绑定可加载 |
-| A-02 | 用真实模型跑通识别 | done | 一段中文语音识别文本与官方示例一致 | 真实模型跑通：F:\ai\sherpa（Paraformer int8 + tokens.txt）+ SAPI Huihui 合成语音，识别出 你好这是语音识别测试今天天气不错，5.75s 音频 80.5ms |
-| A-03 | VAD 分段 + 长音频批量识别 | todo | 10 分钟音频分段结果与整段一致 | sherpa 自带 VoiceActivityDetector |
+| A-01 | sherpa-onnx 接线：WavReader + SherpaAsr + CLI `asr` | blocked | — | 已按需求移除：sherpa 自带 Microsoft ONNX Runtime；包/开关/SherpaAsr/CLI asr 全删，WavReader 保留 |
+| A-02 | 用真实模型跑通识别 | blocked | — | 曾跑通（你好这是语音识别测试今天天气不错，5.75s/80.5ms），但依赖 sherpa+ORT，已删除 |
+| A-03 | VAD 分段 + 长音频批量识别 | blocked | — | VAD 待纯托管路线再评估（Silero VAD fp32 可用 SimdOnnx 跑） |
+
+## 阶段 6 · 纯托管 ASR（Paraformer on SimdOnnx，任务 ID `P-*`）
+
+> 目标：`F:\ai\sherpa\model.int8.onnx` 不经过 sherpa/ORT，用 SimdOnnx 的 kernel 跑。
+> 图里有 `Loop/NonZero/GatherND/Sequence`（CIF + CTC top-k），静态计划跑不了 → **改为 C# 重实现 Paraformer 结构**，
+> 引擎只提供 MatMul/Conv/Softmax/ReLU 等 kernel。sherpa 那条路保留作**对照 oracle**。
+
+| ID | 任务 | 状态 | 验收 | 备注 |
+|---|---|---|---|---|
+| P-01 | int8 → fp32 权重导出（`tools/prep/export-paraformer-f32.py`） | done | 753 张量 / 260.8 MB，manifest 带 name/shape/offset | 222 个 MatMulInteger 按 `(W_q-zp)*scale` 还原 |
+| P-02 | fbank 80 维 + LFR(m=7,n=6) 前端（纯 C#，对齐 kaldi-native-fbank） | todo | 端到端识别文本与 sherpa 一致 | sherpa 用 25ms/10ms、povey 窗、preemph 0.97、nfft 512、20–8000 Hz |
+| P-03 | encoder：`encoders0`（下采样）+ 39×SANM（FSMN k=11、4 heads、FFN 1280+ReLU） | todo | 中间层与 ORT 对比 | 隐藏维 320，输入 560 |
+| P-04 | CIF predictor（`cif_conv1d` + integrate-and-excite） | todo | token 数与 sherpa 一致 | 图里那个 `Loop` 就是它 |
+| P-05 | decoder：12 块 self/cross-attn + argmax + `tokens.txt` 去词 | todo | 文本逐字与 sherpa 一致 | 非自回归，C# 里直接并行 |
+| P-06 | CLI `asr --engine managed` 并做 sherpa/managed 对比 | todo | 同一 wav 两条路文本一致 | 默认仍走 sherpa |
 
 ## M6 · 打磨与发布
 
@@ -110,6 +126,9 @@
 | E-04 | 图输入 int64 → float 通道（或等价改造） | todo | SAM3 文本 tokens 可直接喂 | 或改用 P |
 | E-05 | E-03 的 Vulkan / Metal 发射 | todo | GPU 目标不逐节点回退 | 引擎规则：不支持就不能选目标 |
 | E-06 | 公共面暴露图 I/O 形状与节点属性（或一个 EngineCapabilities 支持集 API） | todo | ext 的 `OnnxHeader` 头部扫描可以删掉 | 目前 `OnnxModel` 只有 Opset/Nodes/InitializerShape |
+
+
+
 
 
 

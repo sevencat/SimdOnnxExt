@@ -38,7 +38,10 @@ OCR（M3）：用 `Sdcb.SimdPaddleOCR.Models.ChineseV6Tiny`（模型是程序集
 
 SAM3（M5）：`wkentaro/sam3-onnx-models-v0.6.0`，三个文件（image encoder / language encoder / decoder）。
 
-## 3. 金标准（对齐 onnxruntime）
+## 3. 金标准（开发期对齐 onnxruntime）
+
+> **ORT 只在开发期当 oracle**：`tools/fixtures/record.py` 用它录一次金标准后就把产物入库，
+> `tests/` 只读产物、不引用 ORT；产品与库本身（`src/`）**不含任何 ONNX Runtime 依赖**。
 
 原则：**测试不依赖 ORT**。用本机 python 一次性记录，产物入库，C# 测试只读产物。
 

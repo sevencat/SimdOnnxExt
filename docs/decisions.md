@@ -79,6 +79,11 @@
 
 ## 2026-11-10 — 语音走 sherpa-onnx，但**默认关闭**（保留"零原生依赖"）
 
+> **Reversed（同日，需求变更）**：sherpa 自带 Microsoft ONNX Runtime，按要求**整体移除**
+> （包引用、开关、`SherpaAsr`、CLI `asr` 全删）。语音改走「阶段 6：纯托管 ASR」——
+> 反量化权重（`tools/prep/export-paraformer-f32.py`）+ 用 SimdOnnx kernel 在 C# 里重实现 Paraformer。
+> 原文保留作为决策轨迹。
+
 **背景**：需求里要加语音识别。sherpa-onnx 是成熟的离线 ASR（paraformer/transducer/ctc/sensevoice/whisper），但 .NET 包是**原生**的：`org.k2fsa.sherpa.onnx.runtime.win-x64` 带 `onnxruntime.dll`(17 MB) + `sherpa-onnx-c-api.dll`(4.1 MB)，与"纯托管、无原生二进制、可 AOT"的核心承诺冲突。
 **决定**：代码放进同一个库项目（`src/OnnxUtil/Audio/`，与"不要按族拆项目"一致），但用 `-p:UseSherpaOnnx=true` 开关控制：只有打开时才加 `PackageReference` 并定义 `SHERPA_ONNX` 宏（`SherpaAsr` 与 CLI `asr` 都在宏内）。默认构建与发布包仍是纯托管。
 **后果**：默认用户拿到的是"零原生依赖"的视觉/OCR 包；需要语音的人必须显式 `-p:UseSherpaOnnx=true` 构建，并接受 ~21 MB 原生运行库。WAV 解析自己写（纯托管，支持 PCM 8/16/24/32 与 float32、任意声道下混），避免为读音频再引依赖。

@@ -46,45 +46,18 @@ dotnet run --project src\OnnxUtil.Cli -- ocr -i F:\ai\20260828093055568_121.jpg 
 person 0.326 / bus 0.296`），单帧 335 ms（Debug 构建，含预处理与后处理）；Vulkan 也能跑通，但存在
 已知的数值差异（见 [gap-matrix §5](docs/gap-matrix.md)）。
 
-## 语音（可选，sherpa-onnx）
+## 语音（进行中：纯托管 ASR）
 
-ASR 用 [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) 的 .NET 绑定。它是**原生库**（包内自带
-`onnxruntime.dll` + `sherpa-onnx-c-api.dll`），所以默认**不编译**，开启后才进输出：
+早期接过 sherpa-onnx，但它自带 **Microsoft ONNX Runtime**（原生），与本仓库"纯托管、不依赖 ONNX Runtime"的定位冲突，
+**已整体移除**（包引用、`UseSherpaOnnx` 开关、`SherpaAsr`、CLI `asr` 全部删掉；纯托管的 `WavReader` 保留）。
 
-```powershell
-dotnet build -p:UseSherpaOnnx=true
-# 下载一个官方模型（资产名以 releases 页面为准）：
-#   https://github.com/k2-fsa/sherpa-onnx/releases/tag/asr-models
-# 解压后目录里应有 tokens.txt + *.onnx
-dotnet run --project src\OnnxUtil.Cli -p:UseSherpaOnnx=true -- asr `
-    -i speech.wav --models models\asr\sherpa-onnx-paraformer-zh-2024-03-09 --kind paraformer
-```
+替代方案见 [docs/PLAN.md](docs/PLAN.md)「阶段 6 · 纯托管 ASR」：不跑 sherpa 的图（图里有 `Loop/NonZero/GatherND`），
+而是把 `F:\ai\sherpa\model.int8.onnx` 的**权重反量化成 fp32**，用 SimdOnnx 的 kernel 在 C# 里重实现 Paraformer：
 
-支持的模型种类：`paraformer`、`transducer`（encoder/decoder/joiner）、`ctc`、`sensevoice`、`whisper`；
-不指定 `--kind` 时按目录里的文件名自动判断。`--json` 会带出 tokens 与时间戳。
+- 已完成：`tools/prep/export-paraformer-f32.py` → 753 个张量 / 260.8 MB fp32 权重包（222 个 int8 matmul 已还原）
+- 待做：fbank 80 + LFR7 前端 → 39×SANM 编码器 → CIF predictor → 12 块 decoder → argmax/去词
 
-**已实测**（`F:\ai\sherpa\model.int8.onnx` + `tokens.txt`，Paraformer int8）：
-
-```
-tts-zh.wav  5.75s  ->  识别 80.5 ms   (CPU)
-text: 你好这是语音识别测试今天天气不错
-```
-
-测试语音是用 Windows SAPI 合成的（本机有 Huihui 中文音色），所以可以离线闭环验证：
-
-```powershell
-$wav = 'models\asr\tts-zh.wav'
-$voice = New-Object -ComObject SAPI.SpVoice
-$voice.Voice = ($voice.GetVoices() | Where-Object { $_.GetDescription() -like '*Huihui*' })
-$stream = New-Object -ComObject SAPI.SpFileStream
-$stream.Open($wav, 3, $false)     # 3 = 写入
-$voice.AudioOutputStream = $stream
-[void]$voice.Speak('你好，这是语音识别测试。今天天气不错。')
-$stream.Close()
-```
-
-> 注意：sherpa-onnx 用自己的 ONNX Runtime 跑模型（int8 量化用的 `MatMulInteger/DynamicQuantizeLinear/Loop`
-> 这些不在 SimdOnnx 的支持集内），所以语音这条路**不经过我们的引擎**；它只是"一键调用"工具箱里的另一个入口。
+sherpa 只在本地作为**对照 oracle**（不进产品、不出现在构建里）。
 
 ## 目标形态（逐步落地）
 

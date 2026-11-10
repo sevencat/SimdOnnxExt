@@ -20,8 +20,6 @@
     <!-- OCR 模型来源（small/medium 由使用方按需加包；核心默认带 tiny + 文本行方向分类） -->
     <PackageVersion Include="Sdcb.SimdPaddleOCR.Models.ChineseV6Tiny" Version="1.0.0" />
     <PackageVersion Include="Sdcb.SimdPaddleOCR.Models.TextLineOrientation" Version="1.0.0" />
-    <!-- 语音（可选，-p:UseSherpaOnnx=true）：原生库 + 自带 onnxruntime -->
-    <PackageVersion Include="org.k2fsa.sherpa.onnx" Version="2.0.1" />
     <!-- 引擎包引用通道（-p:UseLocalSimdOnnx=false）。注意：Sdcb.SimdOnnx 目前**不在** nuget.org，
          走这条通道需要 nuget.config 里配 ProGet 测试源；精确版本，避免 pre-release 内部 API 漂移。 -->
     <PackageVersion Include="Sdcb.SimdOnnx" Version="[0.1.0]" />
