@@ -4,6 +4,7 @@ using System.Text.Json;
 using ImageFacade;
 using ImageFacade.Pipeline;
 using OnnxUtil;
+using OnnxUtil.Audio;
 using OnnxUtil.Imaging;
 using OnnxUtil.Ocr;
 using OnnxUtil.Onnx;
@@ -32,9 +33,21 @@ simdonnxx — OnnxUtil 命令行
   退出码：0 = 成功；1 = 失败（有缺口/异常）；2 = 参数错误。
 """;
 
+#if SHERPA_ONNX
+const string AsrUsage = """
+
+  asr -i <audio.wav> --models <dir> [--kind paraformer|transducer|ctc|sensevoice|whisper]
+      [--lang zh] [--threads 2] [--provider cpu] [--json]
+      sherpa-onnx 离线语音识别（**原生库**，需 -p:UseSherpaOnnx=true 构建）：wav → 文本。
+""";
+string usage = Usage + AsrUsage;
+#else
+string usage = Usage;
+#endif
+
 if (args.Length == 0)
 {
-    Console.Error.WriteLine(Usage);
+    Console.Error.WriteLine(usage);
     return 2;
 }
 
@@ -45,6 +58,9 @@ try
         "inspect" => Inspect(args),
         "run" => RunCommand(args),
         "ocr" => OcrCommand(args),
+#if SHERPA_ONNX
+        "asr" => AsrCommand(args),
+#endif
         "-h" or "--help" or "help" => Help(),
         _ => Unknown(args[0]),
     };
@@ -57,14 +73,14 @@ catch (Exception ex)
 
 int Help()
 {
-    Console.WriteLine(Usage);
+    Console.WriteLine(usage);
     return 0;
 }
 
 int Unknown(string command)
 {
     Console.Error.WriteLine($"未知命令：{command}");
-    Console.Error.WriteLine(Usage);
+    Console.Error.WriteLine(usage);
     return 2;
 }
 
@@ -316,6 +332,71 @@ static float ShrinkTo(FacadeImage image, int maxSide)
     image.Resize(Math.Max(1, (int)MathF.Round(image.Width * ratio)), Math.Max(1, (int)MathF.Round(image.Height * ratio)));
     return ratio;
 }
+
+#if SHERPA_ONNX
+int AsrCommand(string[] argv)
+{
+    string? wav = null, models = null, kind = null, lang = null, provider = null, tokens = null;
+    int threads = 2;
+    bool json = false;
+    for (int i = 1; i < argv.Length; i++)
+    {
+        switch (argv[i])
+        {
+            case "-i" or "--input": wav = Next(argv, ref i); break;
+            case "--models": models = Next(argv, ref i); break;
+            case "--kind": kind = Next(argv, ref i); break;
+            case "--lang": lang = Next(argv, ref i); break;
+            case "--provider": provider = Next(argv, ref i); break;
+            case "--tokens": tokens = Next(argv, ref i); break;
+            case "--threads": threads = int.Parse(Next(argv, ref i), CultureInfo.InvariantCulture); break;
+            case "--json": json = true; break;
+            default: throw new ArgumentException($"未知参数：{argv[i]}");
+        }
+    }
+    if (wav is null || models is null) throw new ArgumentException("asr 需要 -i <audio.wav> 和 --models <dir>");
+
+    using SherpaAsr asr = SherpaAsr.Load(new AsrOptions
+    {
+        ModelDirectory = models,
+        Kind = kind is null ? AsrModelKind.Auto : Enum.Parse<AsrModelKind>(kind, ignoreCase: true),
+        Threads = threads,
+        Language = lang,
+        Provider = provider,
+        Tokens = tokens,
+    });
+
+    Stopwatch watch = Stopwatch.StartNew();
+    AsrResult result = asr.TranscribeFile(wav);
+    double elapsed = watch.Elapsed.TotalMilliseconds;
+
+    if (json)
+    {
+        Console.WriteLine(JsonSerializer.Serialize(new
+        {
+            audio = Path.GetFullPath(wav),
+            model = asr.ModelDirectory,
+            kind = asr.Kind,
+            durationSeconds = Math.Round(result.DurationSeconds, 3),
+            elapsedMs = Math.Round(elapsed, 1),
+            text = result.Text,
+            tokens = result.Tokens.Select((t, i) => new
+            {
+                token = t,
+                time = i < result.Timestamps.Length ? Math.Round(result.Timestamps[i], 3) : (double?)null,
+            }),
+        }, Program.JsonOptions));
+        return 0;
+    }
+
+    Console.WriteLine($"{Path.GetFileName(wav)}  {result.DurationSeconds:F2}s  ->  识别 {elapsed:F0} ms");
+    Console.WriteLine($"  model : {asr.Kind} @ {asr.ModelDirectory}");
+    Console.WriteLine("  text  : " + result.Text);
+    if (result.Timestamps.Length > 0)
+        Console.WriteLine("  times : " + string.Join(", ", result.Timestamps.Take(12).Select(t => t.ToString("F2"))));
+    return 0;
+}
+#endif
 
 string Next(string[] argv, ref int i)
 {

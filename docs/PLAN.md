@@ -52,8 +52,8 @@
 
 | ID | 任务 | 状态 | 验收 | 备注 |
 |---|---|---|---|---|
-| M4-01 | 可行性试验：编译截断到 `transformer/decoder/norm` | todo | 记录剪枝后仍缺的算子清单 | 先证伪再排期 |
-| M4-02 | 上游算子批次落地（E-03）后编译整图 | todo | 全图编译通过且 CPU 结果对 ORT 一致 | 见 gap-matrix |
+| M4-01 | 可行性试验：编译截断到 `transformer/decoder/norm` | done | 记录剪枝后仍缺的算子清单 | P 路线验证：onnxslim 1537->821 节点、19->12 类、dets/labels 与原始 1.9e-5/4.0e-5 等价；引擎首块绊脚石为 patch-embed Cast，脚本 tools/prep/slim-model.py |
+| M4-02 | 上游算子批次落地（E-03）后编译整图 | todo | 全图编译通过且 CPU 结果对 ORT 一致 | slim 模型的引擎首个失败点是 bool 张量（/transformer/Cast_2_output_0 raw dtype 9），E-03 需先补 bool/int-as-float 表达再补 11 个算子 |
 | M4-03 | Host 解码：sigmoid + top-k + 框还原 + 类别表 | todo | 300 框与 ORT mAP 差 ≤ 0.5 | 读 `rfdetr_inference` 元数据 |
 | M4-04 | Vulkan 对齐与性能基准 | todo | 与 CPU 同结果，GPU 有加速 | 记录 device 面包屑 |
 
@@ -65,7 +65,7 @@
 | M3-02 | rec + 字典（`CtcProjection` / `CtcGreedyDecoder`） | done | 文本逐行一致，分数差 ≤ 1e-4 | rec：裁剪->高 48 等比缩放->引擎 CtcGreedyDecoder；字典 6906 类；合成中文 你好世界/123 全对 |
 | M3-03 | 方向分类 cls 接入 | done | 180 度样本纠正率一致 | PP-LCNet 方向分类接线：80x160 输入、softmax 后 p>0.9 才旋转 180 |
 | M3-04 | `VkBatch` + `ArgMaxUnits` 行批处理 | todo | Vulkan 吞吐显著优于逐行 | 现在逐行跑，还没有批处理 |
-| M3-05 | 与 SimdPaddleOCR 逐行对齐 + 可视化 | todo | 同一数据集 100 图全一致 | 已有 bus.jpg + 合成中文两条回归；还差对照数据集 |
+| M3-05 | 与 SimdPaddleOCR 逐行对齐 + 可视化 | todo | 同一数据集 100 图全一致 | 可视化改进：标签字号/线宽按图幅缩放（最短边 4.5%）+ --font/--stroke/--max-side；大图小字用 --det-limit 1600 修正车牌浙A·3M15X |
 
 ## 阶段 4 · SAM3（任务 ID `M5-*`，暂缓）
 
@@ -79,6 +79,16 @@
 | M5-04 | decoder：框 / 点 / 文本提示 | todo | 三类提示均出正确掩码 | |
 | M5-05 | 掩码后处理（上采样 / 阈值 / 裁剪）+ 可视化 | todo | 掩码 IoU ≥ 0.95 对 ORT | 输出 PNG |
 | M5-06 | Vulkan 对齐与性能基准 | todo | 与 CPU 同结果 | fp16 存储 |
+
+## 阶段 5 · 语音 ASR（sherpa-onnx，可选 · 任务 ID `A-*`）
+
+> 唯一的**原生依赖**：`org.k2fsa.sherpa.onnx` 自带 onnxruntime，默认不编译（`-p:UseSherpaOnnx=true`）。
+
+| ID | 任务 | 状态 | 验收 | 备注 |
+|---|---|---|---|---|
+| A-01 | sherpa-onnx 接线：WavReader + SherpaAsr（paraformer/transducer/ctc/sensevoice/whisper）+ CLI `asr` | done | 带开关构建通过；原生绑定可加载；WAV 解析拒绝非音频 | sherpa-onnx 接线完成（可选开关 -p:UseSherpaOnnx=true）：WavReader(纯托管)+SherpaAsr(5 种模型)+CLI asr；带开关构建 0 警告、原生绑定可加载 |
+| A-02 | 用真实模型跑通识别 | done | 一段中文语音识别文本与官方示例一致 | 真实模型跑通：F:\ai\sherpa（Paraformer int8 + tokens.txt）+ SAPI Huihui 合成语音，识别出 你好这是语音识别测试今天天气不错，5.75s 音频 80.5ms |
+| A-03 | VAD 分段 + 长音频批量识别 | todo | 10 分钟音频分段结果与整段一致 | sherpa 自带 VoiceActivityDetector |
 
 ## M6 · 打磨与发布
 
@@ -100,6 +110,11 @@
 | E-04 | 图输入 int64 → float 通道（或等价改造） | todo | SAM3 文本 tokens 可直接喂 | 或改用 P |
 | E-05 | E-03 的 Vulkan / Metal 发射 | todo | GPU 目标不逐节点回退 | 引擎规则：不支持就不能选目标 |
 | E-06 | 公共面暴露图 I/O 形状与节点属性（或一个 EngineCapabilities 支持集 API） | todo | ext 的 `OnnxHeader` 头部扫描可以删掉 | 目前 `OnnxModel` 只有 Opset/Nodes/InitializerShape |
+
+
+
+
+
 
 
 

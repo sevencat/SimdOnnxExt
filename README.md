@@ -30,9 +30,61 @@ dotnet run --project src\OnnxUtil.Cli -- ocr -i tests\assets\bus.jpg -o out\bus-
 - 另有一个自包含回归：用 ImageFacade 画「你好世界 / OnnxUtil 123」再读回来，中文与数字全对
   （`tests/OnnxUtil.Tests/OcrEndToEndTests.cs`）。
 
+大图 / 小字（例如 3200×1800 的车牌抓拍）这样调：
+
+```powershell
+# 提高检测分辨率（默认 960），并把输出缩到便于查看的尺寸；标签字号默认按图幅自动缩放
+dotnet run --project src\OnnxUtil.Cli -- ocr -i F:\ai\20260828093055568_121.jpg `
+    --det-limit 1600 --max-side 1200 --backend cpu
+# 想固定标签大小：--font 64 --stroke 5
+```
+
+实测同一张车牌图：默认 960 时两块牌读成 `浙A ES8381` / `浙A3M15X`（`浙` 变 `新`）；
+`--det-limit 1600` 后是 `浙A ES8381 0.895` / **`浙A·3M15X 0.883`**（正确），耗时 0.99 s → 1.5 s。
+
 实测（bus.jpg，810×1080，`--conf 0.20`，CPU）：5 个目标（`person 0.679 / person 0.417 / car 0.383 /
 person 0.326 / bus 0.296`），单帧 335 ms（Debug 构建，含预处理与后处理）；Vulkan 也能跑通，但存在
 已知的数值差异（见 [gap-matrix §5](docs/gap-matrix.md)）。
+
+## 语音（可选，sherpa-onnx）
+
+ASR 用 [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) 的 .NET 绑定。它是**原生库**（包内自带
+`onnxruntime.dll` + `sherpa-onnx-c-api.dll`），所以默认**不编译**，开启后才进输出：
+
+```powershell
+dotnet build -p:UseSherpaOnnx=true
+# 下载一个官方模型（资产名以 releases 页面为准）：
+#   https://github.com/k2-fsa/sherpa-onnx/releases/tag/asr-models
+# 解压后目录里应有 tokens.txt + *.onnx
+dotnet run --project src\OnnxUtil.Cli -p:UseSherpaOnnx=true -- asr `
+    -i speech.wav --models models\asr\sherpa-onnx-paraformer-zh-2024-03-09 --kind paraformer
+```
+
+支持的模型种类：`paraformer`、`transducer`（encoder/decoder/joiner）、`ctc`、`sensevoice`、`whisper`；
+不指定 `--kind` 时按目录里的文件名自动判断。`--json` 会带出 tokens 与时间戳。
+
+**已实测**（`F:\ai\sherpa\model.int8.onnx` + `tokens.txt`，Paraformer int8）：
+
+```
+tts-zh.wav  5.75s  ->  识别 80.5 ms   (CPU)
+text: 你好这是语音识别测试今天天气不错
+```
+
+测试语音是用 Windows SAPI 合成的（本机有 Huihui 中文音色），所以可以离线闭环验证：
+
+```powershell
+$wav = 'models\asr\tts-zh.wav'
+$voice = New-Object -ComObject SAPI.SpVoice
+$voice.Voice = ($voice.GetVoices() | Where-Object { $_.GetDescription() -like '*Huihui*' })
+$stream = New-Object -ComObject SAPI.SpFileStream
+$stream.Open($wav, 3, $false)     # 3 = 写入
+$voice.AudioOutputStream = $stream
+[void]$voice.Speak('你好，这是语音识别测试。今天天气不错。')
+$stream.Close()
+```
+
+> 注意：sherpa-onnx 用自己的 ONNX Runtime 跑模型（int8 量化用的 `MatMulInteger/DynamicQuantizeLinear/Loop`
+> 这些不在 SimdOnnx 的支持集内），所以语音这条路**不经过我们的引擎**；它只是"一键调用"工具箱里的另一个入口。
 
 ## 目标形态（逐步落地）
 

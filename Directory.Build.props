@@ -10,6 +10,9 @@
     <ImageFacadeRoot Condition="'$(ImageFacadeRoot)' == ''">$(MSBuildThisFileDirectory)..\ImageFacade\src\</ImageFacadeRoot>
     <ImageFacadeCoreProject Condition="'$(ImageFacadeCoreProject)' == ''">$(ImageFacadeRoot)ImageFacade\ImageFacade.csproj</ImageFacadeCoreProject>
     <ImageFacadeSoftProject Condition="'$(ImageFacadeSoftProject)' == ''">$(ImageFacadeRoot)ImageFacade.SdcbSimdCodecs\ImageFacade.SdcbSimdCodecs.csproj</ImageFacadeSoftProject>
+    <!-- 语音（sherpa-onnx）是**原生**依赖（自带 onnxruntime.dll），默认关闭以保持核心"零原生依赖"；
+         需要 ASR 时用 -p:UseSherpaOnnx=true 构建。 -->
+    <UseSherpaOnnx Condition="'$(UseSherpaOnnx)' == ''">false</UseSherpaOnnx>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -52,4 +55,12 @@
           Condition="'$(UseLocalImageFacade)' == 'true' And !Exists('$(ImageFacadeCoreProject)')">
     <Error Text="找不到图像门面工程：$(ImageFacadeCoreProject)。请把 ImageFacade 仓库放在本仓库同级目录，或用 -p:UseLocalImageFacade=false 走 nuget 包。" />
   </Target>
+
+  <!-- 语音：sherpa-onnx（可选，原生）。打开后所有项目都能用 SherpaOnnx 命名空间与 SHERPA_ONNX 宏。 -->
+  <ItemGroup Condition="'$(UseSherpaOnnx)' == 'true'">
+    <PackageReference Include="org.k2fsa.sherpa.onnx" />
+  </ItemGroup>
+  <PropertyGroup Condition="'$(UseSherpaOnnx)' == 'true'">
+    <DefineConstants>$(DefineConstants);SHERPA_ONNX</DefineConstants>
+  </PropertyGroup>
 </Project>

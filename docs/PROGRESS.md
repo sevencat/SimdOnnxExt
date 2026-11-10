@@ -1,18 +1,19 @@
 # 进度快照（自动生成）
 
-> 生成时间：2026-11-10 16:09
+> 生成时间：2026-11-10 16:40
 > 由 tools/progress.ps1 -Write 生成，请勿手改；计划与验收口径改 docs/PLAN.md，规范见 AGENTS.md。
 
-**总进度：15/46（33%）**  [##########----------------------]
+**总进度：18/49（37%）**  [############--------------------]
 
 | 里程碑 | 完成 | 总计 | 状态 |
 |---|---:|---:|---|
 | M0 · 仓库骨架与规范 | 7 | 8 | 进行中 |
 | 阶段 1 · YOLO 检测一键跑通（任务 ID `M1-*`） | 5 | 7 | 进行中 |
 | 阶段 1 · YOLO 全家族（seg / pose / v10 / v26，任务 ID `M2-*`） | 0 | 5 | 未开始 |
-| 阶段 2 · RF-DETR（任务 ID `M4-*`） | 0 | 4 | 未开始 |
+| 阶段 2 · RF-DETR（任务 ID `M4-*`） | 1 | 4 | 进行中 |
 | 阶段 3 · simdocr / OCR 一键（任务 ID `M3-*`） | 3 | 5 | 进行中 |
 | 阶段 4 · SAM3（任务 ID `M5-*`，暂缓） | 0 | 6 | 未开始 |
+| 阶段 5 · 语音 ASR（sherpa-onnx，可选 · 任务 ID `A-*`） | 2 | 3 | 进行中 |
 | M6 · 打磨与发布 | 0 | 5 | 未开始 |
 | E · 引擎侧（SimdOnnx 仓库 PR，独立于本仓库） | 0 | 6 | 未开始 |
 
@@ -27,16 +28,16 @@
 
 ## 最近变更（2026-11）
 
-- 2026-11-10 15:46 · M1-02 · todo → done · CPU 跑通 yolo11n-opset12：对 ORT 最大偏差 5.493e-4；bus.jpg 端到端 5 个目标
-- 2026-11-10 15:46 · M1-03 · todo → done · ImageHost letterbox（114/居中）+ LetterboxInfo.ToSource 往返 ≤0.5px，真图坐标正确
-- 2026-11-10 15:46 · M1-04 · todo → done · YoloPostprocess：DFL 输出解码 + 分数阈值 + class-aware NMS（ImageFacade Nms.Suppress）
-- 2026-11-10 15:46 · M1-06 · todo → done · 默认把框画到原图并另存；--json 输出 JSON（已实测）
-- 2026-11-10 15:46 · M1-05 · todo → doing · Vulkan 能跑且检测结果与 CPU 一致，但原始输出存在已知偏差 0.3502 @#967，待定位
 - 2026-11-10 15:56 · M0-01 · done → done · 构建结构定型：单库项目 OnnxUtil（Yolo 等族放子目录）+ OnnxUtil.Cli + OnnxUtil.slnx；命名空间/程序集统一 OnnxUtil；Release 构建与 17 个测试通过
 - 2026-11-10 16:09 · M3-01 · done → done · PaddleOcrPipeline det：DB 概率图->纯 C# 连通域->轴对齐框->面积/周长外扩；bus.jpg 上 8 行
 - 2026-11-10 16:09 · M3-02 · done → done · rec：裁剪->高 48 等比缩放->引擎 CtcGreedyDecoder；字典 6906 类；合成中文 你好世界/123 全对
 - 2026-11-10 16:09 · M3-03 · done → done · PP-LCNet 方向分类接线：80x160 输入、softmax 后 p>0.9 才旋转 180
 - 2026-11-10 16:09 · M3-01 · done → done · PaddleOcrPipeline det：DB 概率图->纯 C# 连通域->轴对齐框->面积/周长外扩；bus.jpg 上 8 行
+- 2026-11-10 16:16 · M3-05 · todo → todo · 可视化改进：标签字号/线宽按图幅缩放（最短边 4.5%）+ --font/--stroke/--max-side；大图小字用 --det-limit 1600 修正车牌浙A·3M15X
+- 2026-11-10 16:19 · M4-01 · done → done · P 路线验证：onnxslim 1537->821 节点、19->12 类、dets/labels 与原始 1.9e-5/4.0e-5 等价；引擎首块绊脚石为 patch-embed Cast，脚本 tools/prep/slim-model.py
+- 2026-11-10 16:20 · M4-02 · todo → todo · slim 模型的引擎首个失败点是 bool 张量（/transformer/Cast_2_output_0 raw dtype 9），E-03 需先补 bool/int-as-float 表达再补 11 个算子
+- 2026-11-10 16:29 · A-01 · done → done · sherpa-onnx 接线完成（可选开关 -p:UseSherpaOnnx=true）：WavReader(纯托管)+SherpaAsr(5 种模型)+CLI asr；带开关构建 0 警告、原生绑定可加载
+- 2026-11-10 16:40 · A-02 · done → done · 真实模型跑通：F:\ai\sherpa（Paraformer int8 + tokens.txt）+ SAPI Huihui 合成语音，识别出 你好这是语音识别测试今天天气不错，5.75s 音频 80.5ms
 
 ## 建议下一步
 

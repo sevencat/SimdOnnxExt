@@ -76,3 +76,10 @@
 - 仓库目录名保留 `SimdOnnxExt`（远端仓库名不变；重命名目录会打断本地工作区与工具路径），**程序集/包/命名空间才是 `OnnxUtil`**。
 **后果**：对外只有一个 `OnnxUtil` 包；单项目会持续变大，靠目录分层而非项目分层，`IsPackable` / 依赖只有一处。CLI 与测试的引用面收敛成一个 `ProjectReference`。
 **复审条件**：若某族引入真正独占的重依赖（如 SAM3 需要 tokenizer 资源、OCR 需要大字典包），再评估拆出独立包；默认仍留在 `OnnxUtil` 内。
+
+## 2026-11-10 — 语音走 sherpa-onnx，但**默认关闭**（保留"零原生依赖"）
+
+**背景**：需求里要加语音识别。sherpa-onnx 是成熟的离线 ASR（paraformer/transducer/ctc/sensevoice/whisper），但 .NET 包是**原生**的：`org.k2fsa.sherpa.onnx.runtime.win-x64` 带 `onnxruntime.dll`(17 MB) + `sherpa-onnx-c-api.dll`(4.1 MB)，与"纯托管、无原生二进制、可 AOT"的核心承诺冲突。
+**决定**：代码放进同一个库项目（`src/OnnxUtil/Audio/`，与"不要按族拆项目"一致），但用 `-p:UseSherpaOnnx=true` 开关控制：只有打开时才加 `PackageReference` 并定义 `SHERPA_ONNX` 宏（`SherpaAsr` 与 CLI `asr` 都在宏内）。默认构建与发布包仍是纯托管。
+**后果**：默认用户拿到的是"零原生依赖"的视觉/OCR 包；需要语音的人必须显式 `-p:UseSherpaOnnx=true` 构建，并接受 ~21 MB 原生运行库。WAV 解析自己写（纯托管，支持 PCM 8/16/24/32 与 float32、任意声道下混），避免为读音频再引依赖。
+**复审条件**：如果语音成为主线需求（例如要做"视频理解"流水线），再考虑把 Audio 拆成独立包 `OnnxUtil.Audio`，让核心包完全不出现原生引用。
